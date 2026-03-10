@@ -45,11 +45,10 @@ export default async function LoginPage({
             Sign in
           </p>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight text-slate-950">
-            Access the vendor workflow by role.
+            Open your workspace.
           </h1>
           <p className="mt-4 max-w-xl text-base leading-7 text-slate-600">
-            This phase uses explicit seeded-email login for local development while
-            Microsoft, Google, and email magic link providers are being wired.
+            Enter the account email and role assigned to you to continue to the right dashboard.
           </p>
 
           {errorMessage ? (
@@ -123,7 +122,7 @@ export default async function LoginPage({
 
         <aside className="rounded-[2rem] border border-slate-200 bg-slate-950 p-8 text-white shadow-[0_30px_100px_-55px_rgba(15,23,42,0.9)]">
           <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
-            Seeded access
+            Available accounts
           </p>
           <div className="mt-6 space-y-4">
             {seededAccess.map((entry) => (
@@ -136,8 +135,7 @@ export default async function LoginPage({
                 </p>
                 <p className="mt-3 text-lg font-semibold">{entry.email}</p>
                 <p className="mt-2 text-sm leading-6 text-slate-300">
-                  Use role <span className="font-semibold text-white">{entry.role}</span> on the
-                  form to open the correct dashboard.
+                  Role: <span className="font-semibold text-white">{entry.role}</span>
                 </p>
               </article>
             ))}

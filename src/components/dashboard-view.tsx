@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { signOut } from "@/auth";
+import { CompanyLogo } from "@/components/company-logo";
 import type { DashboardConfig } from "@/lib/portal-types";
 
 export function DashboardView({
@@ -18,22 +19,11 @@ export function DashboardView({
 }) {
   return (
     <main className="min-h-screen bg-[var(--portal-bg)] text-slate-900">
-      <section className="border-b border-slate-200 bg-[linear-gradient(180deg,#f5f8ff_0%,#ffffff_100%)]">
+      <section className="border-b border-slate-200 bg-[linear-gradient(180deg,#f7f9fc_0%,#ffffff_100%)]">
         <div className="mx-auto w-full max-w-7xl px-6 py-8 sm:px-8 lg:px-12">
-          <div className="flex flex-col gap-8 rounded-[2rem] border border-white/80 bg-white/80 p-6 shadow-[0_24px_90px_-52px_rgba(15,23,42,0.45)] backdrop-blur">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-              <div className="max-w-3xl space-y-4">
-                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[var(--portal-blue)]">
-                  {dashboard.eyebrow}
-                </p>
-                <h1 className="text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
-                  {dashboard.title}
-                </h1>
-                <p className="text-base leading-7 text-slate-600 sm:text-lg">
-                  {dashboard.description}
-                </p>
-              </div>
-
+          <div className="flex flex-col gap-6 rounded-[2rem] border border-white/80 bg-white/85 p-6 shadow-[0_24px_90px_-52px_rgba(15,23,42,0.45)] backdrop-blur">
+            <div className="flex flex-col gap-5 border-b border-slate-200 pb-5 lg:flex-row lg:items-center lg:justify-between">
+              <CompanyLogo />
               <div className="flex flex-wrap items-center gap-3">
                 {currentUser ? (
                   <div className="flex items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700">
@@ -49,13 +39,7 @@ export function DashboardView({
                   href="/"
                   className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:border-slate-400 hover:bg-slate-50"
                 >
-                  Home
-                </Link>
-                <Link
-                  href="/architecture"
-                  className="rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
-                >
-                  Architecture
+                  Portal home
                 </Link>
                 <form
                   action={async () => {
@@ -70,6 +54,20 @@ export function DashboardView({
                     Sign out
                   </button>
                 </form>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-3xl space-y-3">
+                <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[var(--portal-blue)]">
+                  {dashboard.eyebrow}
+                </p>
+                <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+                  {dashboard.title}
+                </h1>
+                <p className="max-w-2xl text-base leading-7 text-slate-600">
+                  {dashboard.description}
+                </p>
               </div>
             </div>
 
@@ -95,7 +93,7 @@ export function DashboardView({
         <div className="space-y-6">
           <article className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_30px_80px_-55px_rgba(15,23,42,0.45)]">
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[var(--portal-red)]">
-              Priority queue
+              Queue
             </p>
             <div className="mt-5 space-y-4">
               {dashboard.priorityQueue.map((item) => (
@@ -117,7 +115,7 @@ export function DashboardView({
 
           <article className="rounded-[1.75rem] border border-slate-200 bg-slate-950 p-6 text-white shadow-[0_30px_80px_-55px_rgba(15,23,42,0.7)]">
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-400">
-              Recommended actions
+              Tasks
             </p>
             <div className="mt-5 space-y-4">
               {dashboard.actions.map((action) => (
@@ -136,7 +134,7 @@ export function DashboardView({
         <div className="space-y-6">
           <article className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_30px_80px_-55px_rgba(15,23,42,0.45)]">
             <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[var(--portal-blue)]">
-              Email and workflow alerts
+              Updates
             </p>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               {dashboard.alerts.map((alert) => (

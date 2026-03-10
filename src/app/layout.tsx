@@ -13,9 +13,9 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Vendor Lifecycle Management Portal",
+  title: "Vendor Management Portal",
   description:
-    "A modular vendor lifecycle portal covering onboarding, job assignment, completion evidence, approvals, and invoicing.",
+    "Lightweight vendor management portal for onboarding, document review, and job activity.",
 };
 
 export default function RootLayout({

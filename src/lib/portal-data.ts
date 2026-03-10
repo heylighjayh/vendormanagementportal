@@ -375,29 +375,28 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
   if (role === "admin") {
     return {
       eyebrow: "Admin Dashboard",
-      title: "Operational control across onboarding, sourcing, and approvals",
-      description:
-        "Create vendor accounts, publish job requests, review uploads, and keep the workflow moving without losing audit visibility.",
+      title: "Manage vendors, reviews, and active jobs",
+      description: "Track onboarding, follow pending approvals, and act on the next records in queue.",
       metrics: [
         {
           label: "Vendors awaiting action",
           value: `${liveVendorSummary.collecting}`,
-          description: "Invited or under-review vendors still inside the onboarding process.",
+          description: "Invited or under-review vendors still in onboarding.",
         },
         {
           label: "Jobs open for quotes",
           value: `${liveJobSummary.open}`,
-          description: "Category-based requests currently visible to verified vendors.",
+          description: "Requests currently visible to verified vendors.",
         },
         {
           label: "Assignment approvals pending",
           value: `${liveJobSummary.assignmentPending}`,
-          description: "Award decisions waiting for a full approval chain.",
+          description: "Award decisions waiting for approval.",
         },
         {
           label: "Completion forms under review",
           value: `${liveJobSummary.completionPending}`,
-          description: "Job evidence submitted but not fully approved yet.",
+          description: "Completion files submitted but not yet cleared.",
         },
       ],
       priorityQueue: [
@@ -419,36 +418,35 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
       ],
       actions: [
         {
-          title: "Create vendor accounts with a 14-day SLA",
-          detail: "Each invitation should immediately schedule day 0, day 7, day 12, and deadline reminders after the admin uploads the onboarding template pack.",
+          title: "Add new vendors",
+          detail: "Create vendor accounts and set deadlines for the next onboarding batch.",
         },
         {
-          title: "Restrict job creation to admins",
-          detail: "This keeps sourcing governance centralized and aligns with your requested control model.",
+          title: "Check open quote windows",
+          detail: "Review active job requests and close out shortlisting when quotes are in.",
         },
         {
-          title: "Publish category-targeted email alerts",
-          detail: "Only verified vendors in the job category should receive quote invitation notifications.",
+          title: "Clear pending reviews",
+          detail: "Move document and completion submissions to the next approval step.",
         },
       ],
       alerts: [
         {
-          title: "Reminder cadence",
-          detail: "Onboarding reminders fire at account creation, mid-way, 48 hours before deadline, and on the deadline date.",
+          title: "Deadline watch",
+          detail: "Follow vendors approaching onboarding deadlines this week.",
         },
         {
-          title: "Assignment notices",
-          detail: "Selected vendors receive assignment alerts only after admin and approver both approve the award.",
+          title: "Award approvals",
+          detail: "Assignments stay blocked until the approval chain is complete.",
         },
         {
-          title: "Invoice unlock",
-          detail: "Completion approval automatically triggers an email telling the vendor the invoice lane is now open.",
+          title: "Completion status",
+          detail: "Watch uploaded completion evidence that still needs sign-off.",
         },
       ],
       table: {
-        title: "Live vendor and job queue",
-        description:
-          "A combined view of the items the admin role needs to touch most often.",
+        title: "Records",
+        description: "Current vendor and job items needing admin attention.",
         columns: ["Record", "Owner", "Current stage", "Next step"],
         rows: [
           [
@@ -479,29 +477,28 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
 
     return {
       eyebrow: "Vendor Workspace",
-      title: "Self-service onboarding and job delivery for external vendors",
-      description:
-        "A vendor can sign in with Google, Microsoft, or a regular email flow, complete onboarding, respond to jobs, and upload completion evidence and invoices.",
+      title: "Upload onboarding files and follow job activity",
+      description: "See what is missing, what is under review, and which jobs need your response.",
       metrics: [
         {
           label: "Onboarding deadline",
           value: liveNorthwind?.onboardingDeadline ?? "TBD",
-          description: "Example 14-day deadline shown with reminder automation.",
+          description: "Next date to complete required onboarding items.",
         },
         {
           label: "Documents uploaded",
           value: `${liveNorthwindProgress.uploaded}/${liveNorthwindProgress.total}`,
-          description: "The portal tracks every required onboarding file individually.",
+          description: "Required onboarding files received so far.",
         },
         {
           label: "Jobs in view",
           value: `${liveVendorFocusedJobs.length}`,
-          description: "Open opportunities plus jobs already assigned to the vendor.",
+          description: "Open requests and active assignments.",
         },
         {
           label: "Invoices unlocked",
           value: `${invoiceReadyCount}`,
-          description: "Jobs where the completion form has been fully approved.",
+          description: "Jobs ready for invoice submission.",
         },
       ],
       priorityQueue: [
@@ -523,36 +520,35 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
       ],
       actions: [
         {
-          title: "Download, complete, and reupload templates",
-          detail: "The vendor downloads the admin-managed template pack, completes each file offline, and reuploads the finished copies into the same onboarding lane.",
+          title: "Upload missing documents",
+          detail: "Complete the required onboarding files that are still outstanding.",
         },
         {
-          title: "Track approval status per file",
-          detail: "Vendors can see exactly which file is pending admin review, approver review, or changes requested.",
+          title: "Follow review outcomes",
+          detail: "Check which submissions are pending, approved, or returned for updates.",
         },
         {
-          title: "Submit invoice only when unlocked",
-          detail: "The invoice action should remain hidden until the completion form reaches dual approval.",
+          title: "Watch invoice readiness",
+          detail: "Submit invoices only after completion evidence has cleared approval.",
         },
       ],
       alerts: [
         {
-          title: "Onboarding reminders",
-          detail: "The vendor receives reminder emails before the two-week deadline expires.",
+          title: "Deadline status",
+          detail: "Prioritize onboarding items due soon.",
         },
         {
-          title: "Category quote alerts",
-          detail: "New job requests trigger an email only if the vendor is verified and matched to the job category.",
+          title: "Job opportunities",
+          detail: "Respond to open requests in your approved categories.",
         },
         {
-          title: "Completion approved notification",
-          detail: "Once the completion form passes both approvals, the vendor gets an alert to upload the invoice.",
+          title: "Completion approvals",
+          detail: "Track when job evidence has been cleared for invoicing.",
         },
       ],
       table: {
-        title: "Vendor activity view",
-        description:
-          "A single vendor workspace can show onboarding status, open quotes, active jobs, and invoice readiness.",
+        title: "Records",
+        description: "Current onboarding and job items for this vendor workspace.",
         columns: ["Item", "Type", "Status", "What the vendor can do"],
         rows: [
           [
@@ -587,29 +583,28 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
 
     return {
       eyebrow: "Approver Dashboard",
-      title: "Second-line approvals with fast access to the highest-risk items",
-      description:
-        "The approver role confirms vendor verification, assignment decisions, and completion evidence so the workflow cannot move ahead on a single-person decision.",
+      title: "Review pending approvals",
+      description: "Handle the second approval step for onboarding, assignments, and completion evidence.",
       metrics: [
         {
           label: "Pending second approvals",
           value: `${pendingApprovals + 1}`,
-          description: "Combined workload across onboarding, assignment, and completion checks.",
+          description: "Open approval workload across active records.",
         },
         {
           label: "Vendors awaiting approval",
           value: "1",
-          description: "Northwind Telecoms still needs approver review on a submitted document.",
+          description: "Vendor submissions still waiting on approver review.",
         },
         {
           label: "Completion reviews",
           value: `${liveJobSummary.completionPending}`,
-          description: "Completion evidence that needs a second sign-off.",
+          description: "Completion evidence waiting on approver sign-off.",
         },
         {
           label: "Award decisions",
           value: `${liveJobSummary.assignmentPending}`,
-          description: "Assignments blocked until the approver records a decision.",
+          description: "Assignments blocked until you record a decision.",
         },
       ],
       priorityQueue: [
@@ -631,36 +626,35 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
       ],
       actions: [
         {
-          title: "Keep evidence quality high",
-          detail: "Use changes-requested outcomes for incorrect or incomplete vendor documents and completion submissions.",
+          title: "Review onboarding files",
+          detail: "Approve clean submissions and return incomplete files for correction.",
         },
         {
-          title: "Separate sourcing from approval",
-          detail: "Admins create and recommend, but the approver role keeps an independent confirmation layer.",
+          title: "Confirm award decisions",
+          detail: "Finalize assignments once the supporting details are complete.",
         },
         {
-          title: "Unlock invoicing only after completion approval",
-          detail: "This ensures the vendor cannot invoice against unverified work.",
+          title: "Clear completion evidence",
+          detail: "Approve job evidence so invoice submission can move forward.",
         },
       ],
       alerts: [
         {
-          title: "Approval assignment emails",
-          detail: "Every new review task should notify the approver with a direct deep link into the record.",
+          title: "New review items",
+          detail: "Watch for submissions that have reached the second approval step.",
         },
         {
-          title: "Escalation reminders",
-          detail: "Pending approvals can be escalated to internal control when SLA thresholds are breached.",
+          title: "Aging approvals",
+          detail: "Prioritize older records to keep the queue moving.",
         },
         {
-          title: "Changes requested feedback",
-          detail: "When approvers reject or request corrections, the vendor and admin both receive the outcome.",
+          title: "Returned submissions",
+          detail: "Track records that need vendor or admin follow-up.",
         },
       ],
       table: {
-        title: "Approver queue",
-        description:
-          "This queue is intentionally small and focused, making second-line review manageable.",
+        title: "Records",
+        description: "Approval items currently waiting on the approver role.",
         columns: ["Record", "Area", "Current state", "Decision needed"],
         rows: [
           [
@@ -691,29 +685,28 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
 
   return {
     eyebrow: "Internal Control Dashboard",
-    title: "Oversight for SLA, compliance, and audit readiness",
-    description:
-      "Internal control stays informed across deadlines, approval latency, and evidence completeness without becoming a bottleneck in the main approval chain.",
+    title: "Monitor deadlines and exceptions",
+    description: "Track records that need escalation, follow overdue items, and keep an audit-ready view.",
     metrics: [
       {
         label: "Open exceptions",
         value: "3",
-        description: "Items with missed documents, pending approvals, or nearing SLA breach.",
+        description: "Items with missing evidence or pending approvals.",
       },
       {
         label: "Vendors nearing deadline",
         value: overdueVendor ? "1" : "0",
-        description: "Onboarding cases that need monitoring before the deadline is missed.",
+        description: "Onboarding cases approaching deadline.",
       },
       {
         label: "Dual-approved completions",
         value: `${fullyApprovedJobs}`,
-        description: "Jobs with evidence strong enough to support invoice submission.",
+        description: "Jobs cleared for invoice submission.",
       },
       {
         label: "Audit trail coverage",
         value: "100%",
-        description: "Every sample workflow event is tied to a dated record and approval state.",
+        description: "Records are tied to dated workflow states.",
       },
     ],
     priorityQueue: [
@@ -733,38 +726,37 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
         status: "Control design",
       },
     ],
-    actions: [
-      {
-        title: "Track approval latency by role",
-        detail: "Time between submission and approval should feed an exception dashboard for overdue tasks.",
-      },
-      {
-        title: "Monitor reminder delivery outcomes",
-        detail: "Email success, bounce rates, and unopened reminders should support escalation logic.",
-      },
-      {
-        title: "Prepare for SAP integration later",
-        detail: "Keep invoices and job references clean so the later SAP ByDesign sync is straightforward.",
-      },
-    ],
-    alerts: [
-      {
-        title: "SLA breach notifications",
-        detail: "Internal control should be copied when onboarding or approval deadlines are approaching breach.",
-      },
-      {
-        title: "Audit-ready exports",
-        detail: "A later phase can add downloadable evidence packs per vendor and per job request.",
-      },
-      {
-        title: "Exception digest",
-        detail: "A daily summary email can bundle overdue vendor onboarding, pending approvals, and invoice blockers.",
-      },
-    ],
-    table: {
-      title: "Control watchlist",
-      description:
-        "Oversight is most useful when it highlights ageing items and incomplete evidence clearly.",
+      actions: [
+        {
+          title: "Watch overdue approvals",
+          detail: "Flag records that have stalled in onboarding or review.",
+        },
+        {
+          title: "Check missing evidence",
+          detail: "Follow vendors or jobs that still lack required supporting files.",
+        },
+        {
+          title: "Prepare control reports",
+          detail: "Keep the watchlist current for audit and escalation follow-up.",
+        },
+      ],
+      alerts: [
+        {
+          title: "Deadline breaches",
+          detail: "Escalate records that are close to missing SLA targets.",
+        },
+        {
+          title: "Approval delays",
+          detail: "Track queues where review turnaround is slipping.",
+        },
+        {
+          title: "Invoice blockers",
+          detail: "Watch jobs that cannot move forward because approvals are incomplete.",
+        },
+      ],
+      table: {
+      title: "Records",
+      description: "Watchlist of records that need control follow-up.",
       columns: ["Record", "Risk", "Current observation", "Control response"],
       rows: [
         [

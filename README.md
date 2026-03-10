@@ -1,39 +1,60 @@
-# Vendor Lifecycle Management Portal
+# Vendor Management Portal
 
-This repository now contains a maintainable MVP foundation for the portal you described:
+This project is a lightweight vendor management portal focused on live operational work:
 
-- vendor onboarding with tracked document uploads
-- admin-managed onboarding template packs for vendors to download and reupload
-- dual approval by `admin` and `approver`
-- admin-only job request creation
-- category-based quote collection for verified vendors
-- job completion form uploads
-- invoice submission only after completion approval
-- email reminder and alert planning
-- future-ready hooks for Microsoft SSO, Google SSO, and SAP ByDesign
+- vendor onboarding and document collection
+- admin-managed onboarding template uploads
+- vendor document submissions
+- dual review by `admin` and `approver`
+- role-based dashboards for admin, vendor, approver, and internal control
+- file storage through Supabase Storage in production
 
-## Why this stack
+The app UI is intentionally concise. Product-overview and architecture pages were removed so the website behaves like an active portal rather than an MVP showcase.
 
-- `Next.js + TypeScript`: one modular codebase for pages, APIs, and future backend logic
-- `PostgreSQL + Prisma`: fast, scalable, and easy to reason about
-- `Auth.js` path planned for Microsoft, Google, and email magic link sign-in
-- Supabase Storage or local dev uploads for onboarding, completion, and invoice files
+## Current app structure
 
-## What is implemented now
+- `/` concise portal entry page with live counts and workspace shortcuts
+- `/login` role-based sign-in page
+- `/dashboard/admin` admin queue, vendor setup, and onboarding template management
+- `/dashboard/vendor` vendor document submission and onboarding pack
+- `/dashboard/approver` approval queue
+- `/dashboard/internal-control-reviewer` oversight watchlist
+- `/api/portal` portal snapshot API
+- `/api/onboarding/templates` onboarding template API
 
-- branded landing page with your uploaded-logo-inspired mark
-- role preview dashboards:
-  - `/dashboard/admin`
-  - `/dashboard/vendor`
-  - `/dashboard/approver`
-  - `/dashboard/internal-control-reviewer`
-- Auth.js login scaffold at `/login`
-- architecture page at `/architecture`
-- database-backed portal API with sample fallback at `/api/portal`
-- onboarding template API at `/api/onboarding/templates`
-- domain types and workflow logic under `src/lib`
-- Prisma schema, initial migration, and seed flow under `prisma/`
-- environment template in `.env.example`
+## Core modules
+
+### Authentication
+
+Auth.js handles sign-in and role-aware routing. Seeded credential login is available for development when `AUTH_DEV_ALLOW_EMAIL_LOGIN="true"`.
+
+### Data layer
+
+Prisma with PostgreSQL stores users, vendors, templates, submissions, approvals, jobs, and notifications.
+
+### File uploads
+
+Production uploads are intended for Supabase Storage. Local file storage is only used for local development.
+
+### Dashboards
+
+Each role gets a focused workspace:
+
+- `admin`: create vendors, upload onboarding templates, monitor queues
+- `vendor`: download templates, upload completed files, follow review status
+- `approver`: handle second-line approvals
+- `internal-control-reviewer`: monitor deadlines, exceptions, and control follow-up
+
+## Stack
+
+- `Next.js 16` with App Router
+- `React 19`
+- `TypeScript`
+- `Prisma 7`
+- `PostgreSQL`
+- `Auth.js`
+- `Supabase Storage`
+- `Tailwind CSS 4`
 
 ## Local run
 
@@ -47,43 +68,35 @@ Then open [http://localhost:3000](http://localhost:3000).
 
 ## Database setup
 
-The app now includes a Prisma 7 database layer plus a seed script that mirrors the sample portal data.
-
 ```bash
 cp .env.example .env
-# update DATABASE_URL to your PostgreSQL instance
+# set DATABASE_URL
 npm run db:push
 npm run db:seed
 ```
 
-If PostgreSQL is not reachable yet, the dashboards and `/api/portal` fall back to the built-in sample snapshot so local preview work can continue.
+If the database is unavailable or empty, the app can fall back to seeded sample portal data for preview purposes.
 
-## Dev auth
+## Environment variables
 
-For local development, the repo now supports a seeded-email Auth.js login flow at `/login`.
+Important variables used by the app:
 
-- Set `AUTH_DEV_ALLOW_EMAIL_LOGIN="true"` in `.env`
-- Sign in with one of the seeded users after `npm run db:seed`
-- Real Google, Microsoft Entra ID, and email magic-link providers can be enabled later with their secrets
+- `DATABASE_URL`
+- `AUTH_SECRET`
+- `AUTH_DEV_ALLOW_EMAIL_LOGIN`
+- `NEXT_PUBLIC_SUPABASE_URL` or `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `STORAGE_BUCKET`
+- provider credentials for Google or Microsoft if enabled
 
-## File uploads
+## Upload behavior
 
-The onboarding forms now support real browser file uploads.
-
-- With `SUPABASE_SERVICE_ROLE_KEY` plus `NEXT_PUBLIC_SUPABASE_URL`, files are stored in Supabase Storage
-- Without those storage env vars, uploads fall back to local files under `public/uploads` so you can test immediately on localhost
-- `STORAGE_BUCKET` defaults to `portal-files`
-
-## Suggested production next steps
-
-1. Add real authentication with Microsoft Entra ID, Google, and email magic links.
-2. Extend the same upload flow to completion forms and invoices.
-3. Add write-side database mutations for onboarding, quotes, assignments, completions, and invoices.
-4. Wire email delivery for onboarding reminders, quote alerts, assignment notices, and invoice unlock notifications.
-5. Add a later SAP ByDesign adapter once the core workflow is live.
+- On localhost, uploads can fall back to `public/uploads`
+- On Vercel, uploads require Supabase storage variables to be configured
+- If production storage is missing, the app now shows an inline dashboard error instead of crashing
 
 ## Notes
 
-- The current build is intentionally a clean starter, not yet a production-complete system.
-- Prisma now powers live reads when `DATABASE_URL` is configured; the sample dataset remains as a safe preview fallback.
-- The internal control reviewer role is modeled as an oversight and exception-monitoring role because your requirements did not make it a mandatory approval gate.
+- The portal currently has working onboarding document upload flows for admins and vendors
+- Some workflow areas still use sample snapshot data until their write paths are implemented
+- Any future stack or architecture explanation should live in this README rather than inside the UI

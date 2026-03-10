@@ -18,7 +18,7 @@ export function CompanyLogo() {
         <p className="font-display text-lg font-bold uppercase tracking-[0.22em] text-slate-950">
           Vendor Portal
         </p>
-        <p className="text-sm text-slate-500">Lifecycle management command center</p>
+        <p className="text-sm text-slate-500">Operations workspace</p>
       </div>
     </Link>
   );
