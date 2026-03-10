@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  VENDOR
+  APPROVER
+  INTERNAL_CONTROL_REVIEWER
+}
+
+enum ApprovalState {
+  PENDING
+  APPROVED
+  CHANGES_REQUESTED
+}
+
+enum VendorStatus {
+  INVITED
+  COLLECTING_DOCUMENTS
+  UNDER_REVIEW
+  VERIFIED
+}
+
+enum JobStatus {
+  OPEN_FOR_QUOTES
+  PENDING_ASSIGNMENT_APPROVAL
+  ASSIGNED
+  COMPLETION_UNDER_REVIEW
+  COMPLETION_APPROVED
+  INVOICE_SUBMITTED
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String?
+  email         String   @unique
+  role          Role
+  createdAt     DateTime @default(now())
+  vendor        Vendor?
+  approvals     ApprovalDecision[]
+  notifications NotificationEvent[]
+}
+
+model Vendor {
+  id                 String           @id @default(cuid())
+  accountOwnerId     String?          @unique
+  accountOwner       User?            @relation(fields: [accountOwnerId], references: [id])
+  companyName        String
+  contactEmail       String           @unique
+  status             VendorStatus     @default(INVITED)
+  onboardingDeadline DateTime
+  categories         String[]
+  createdAt          DateTime         @default(now())
+  documents          VendorDocument[]
+  quotes             JobQuote[]
+  assignments        JobAssignment[]
+}
+
+model OnboardingDocumentTemplate {
+  id          String           @id @default(cuid())
+  name        String
+  isRequired  Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  submissions VendorDocument[]
+}
+
+model VendorDocument {
+  id          String                     @id @default(cuid())
+  vendorId    String
+  templateId  String
+  storagePath String
+  uploadedAt  DateTime                   @default(now())
+  vendor      Vendor                     @relation(fields: [vendorId], references: [id])
+  template    OnboardingDocumentTemplate @relation(fields: [templateId], references: [id])
+  approvals   ApprovalDecision[]
+}
+
+model JobRequest {
+  id                   String                  @id @default(cuid())
+  reference            String                  @unique
+  title                String
+  category             String
+  description          String
+  createdById          String
+  createdBy            User                    @relation(fields: [createdById], references: [id])
+  status               JobStatus               @default(OPEN_FOR_QUOTES)
+  createdAt            DateTime                @default(now())
+  quotes               JobQuote[]
+  assignment           JobAssignment?
+  completionSubmission JobCompletionSubmission?
+  invoiceSubmission    InvoiceSubmission?
+}
+
+model JobQuote {
+  id           String     @id @default(cuid())
+  jobRequestId String
+  vendorId     String
+  amount       Decimal    @db.Decimal(18, 2)
+  notes        String?
+  submittedAt  DateTime   @default(now())
+  jobRequest   JobRequest @relation(fields: [jobRequestId], references: [id])
+  vendor       Vendor     @relation(fields: [vendorId], references: [id])
+}
+
+model JobAssignment {
+  id           String              @id @default(cuid())
+  jobRequestId String              @unique
+  vendorId     String
+  assignedAt   DateTime            @default(now())
+  jobRequest   JobRequest          @relation(fields: [jobRequestId], references: [id])
+  vendor       Vendor              @relation(fields: [vendorId], references: [id])
+  approvals    ApprovalDecision[]
+}
+
+model JobCompletionSubmission {
+  id           String              @id @default(cuid())
+  jobRequestId String              @unique
+  storagePath  String
+  uploadedAt   DateTime            @default(now())
+  jobRequest   JobRequest          @relation(fields: [jobRequestId], references: [id])
+  approvals    ApprovalDecision[]
+}
+
+model InvoiceSubmission {
+  id           String     @id @default(cuid())
+  jobRequestId String     @unique
+  storagePath  String
+  uploadedAt   DateTime   @default(now())
+  jobRequest   JobRequest @relation(fields: [jobRequestId], references: [id])
+}
+
+model ApprovalDecision {
+  id                     String                   @id @default(cuid())
+  reviewerId             String
+  reviewer               User                     @relation(fields: [reviewerId], references: [id])
+  state                  ApprovalState            @default(PENDING)
+  notes                  String?
+  decidedAt              DateTime?
+  vendorDocumentId       String?
+  jobAssignmentId        String?
+  completionSubmissionId String?
+  vendorDocument         VendorDocument?          @relation(fields: [vendorDocumentId], references: [id])
+  jobAssignment          JobAssignment?           @relation(fields: [jobAssignmentId], references: [id])
+  completionSubmission   JobCompletionSubmission? @relation(fields: [completionSubmissionId], references: [id])
+}
+
+model NotificationEvent {
+  id          String   @id @default(cuid())
+  recipientId String
+  recipient   User     @relation(fields: [recipientId], references: [id])
+  type        String
+  payload     Json
+  createdAt   DateTime @default(now())
+  sentAt      DateTime?
+}
