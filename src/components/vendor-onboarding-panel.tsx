@@ -179,38 +179,51 @@ export async function VendorOnboardingPanel({
   email?: string | null;
   statusMessage?: PanelStatusMessage | null;
 }) {
-  const prisma = getPrismaClient();
-  const vendor = await prisma.vendor.findFirst({
-    where: {
-      OR: [{ accountOwnerId: userId }, ...(email ? [{ contactEmail: email }] : [])],
-    },
-    include: {
-      documents: {
+  let vendor;
+  let templates;
+  try {
+    const prisma = getPrismaClient();
+    [vendor, templates] = await Promise.all([
+      prisma.vendor.findFirst({
+        where: {
+          OR: [{ accountOwnerId: userId }, ...(email ? [{ contactEmail: email }] : [])],
+        },
         include: {
-          template: true,
-          approvals: {
+          documents: {
             include: {
-              reviewer: true,
+              template: true,
+              approvals: {
+                include: {
+                  reviewer: true,
+                },
+              },
             },
           },
         },
-      },
-    },
-  });
-
-  if (!vendor) {
+      }),
+      prisma.onboardingDocumentTemplate.findMany({
+        orderBy: {
+          createdAt: "asc",
+        },
+      }),
+    ]);
+  } catch (error) {
+    const loadError =
+      error instanceof Error ? error.message : "Vendor records are unavailable right now.";
     return (
       <article className="rounded-[1.75rem] border border-amber-200 bg-amber-50 p-6 text-amber-900">
-        No vendor account is linked to this login yet. Ask an admin to create your vendor record.
+        Vendor records are unavailable. {loadError}
       </article>
     );
   }
 
-  const templates = await prisma.onboardingDocumentTemplate.findMany({
-    orderBy: {
-      createdAt: "asc",
-    },
-  });
+  if (!vendor) {
+    return (
+      <article className="rounded-[1.75rem] border border-amber-200 bg-amber-50 p-6 text-amber-900">
+        No vendor record is linked to this login.
+      </article>
+    );
+  }
   const documentsByTemplateId = new Map(
     vendor.documents.map((document) => [document.templateId, document] as const),
   );
@@ -245,11 +258,9 @@ export async function VendorOnboardingPanel({
       ) : null}
       <article className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_30px_80px_-55px_rgba(15,23,42,0.45)]">
         <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--portal-blue)]">
-          Submit completed onboarding file
+          Upload file
         </p>
-        <h2 className="mt-3 text-2xl font-semibold text-slate-950">
-          Download the admin template, complete it offline, and reupload the finished copy.
-        </h2>
+        <h2 className="mt-3 text-2xl font-semibold text-slate-950">Submit onboarding document</h2>
         <p className="mt-3 text-sm leading-6 text-slate-600">
           Files are stored using <span className="font-semibold">{storageBackendLabel}</span>.
         </p>
@@ -278,7 +289,7 @@ export async function VendorOnboardingPanel({
               className="block w-full text-sm file:mr-4 file:rounded-full file:border-0 file:bg-[var(--portal-blue)] file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-[#184ca8]"
             />
             <span className="text-xs text-slate-500">
-              Upload the completed copy. Each file should stay under 20 MB.
+              Max file size: 20 MB.
             </span>
           </label>
           <button
@@ -292,7 +303,7 @@ export async function VendorOnboardingPanel({
 
       <article className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_30px_80px_-55px_rgba(15,23,42,0.45)]">
         <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--portal-red)]">
-          My onboarding pack
+          Files
         </p>
         <div className="mt-5 space-y-4">
           {templateEntries.map(({ template, submission, templateDownloadUrl, submissionDownloadUrl }) => {
@@ -337,7 +348,7 @@ export async function VendorOnboardingPanel({
                       rel="noreferrer"
                       className="rounded-full border border-slate-300 px-3 py-2 font-semibold text-slate-900 transition hover:border-slate-400 hover:bg-white"
                     >
-                      Open uploaded copy
+                      Open submission
                     </a>
                   ) : null}
                   <span className="rounded-full bg-white px-3 py-2 text-slate-700">

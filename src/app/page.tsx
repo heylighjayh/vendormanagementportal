@@ -53,22 +53,21 @@ export default async function Home() {
         {snapshot.source === "sample" ? (
           <article className="rounded-[1.5rem] border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900">
             {snapshot.error
-              ? `Sample data is showing because live records could not be loaded: ${snapshot.error}`
-              : "Sample data is showing because there are no live portal records yet."}
+              ? `Showing sample records. ${snapshot.error}`
+              : "Showing sample records."}
           </article>
         ) : null}
 
         <section className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
           <article className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-[0_30px_90px_-60px_rgba(15,23,42,0.45)]">
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--portal-blue)]">
-              Vendor Management Portal
+              Vendor Management
             </p>
             <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
-              Manage vendor onboarding, document review, and job activity in one place.
+              Vendors, reviews, and jobs.
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-              Use the role workspaces to upload required documents, review submissions, and
-              monitor vendor activity without the extra product-tour content.
+              Open a dashboard and work from the queue.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -150,9 +149,9 @@ export default async function Home() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--portal-blue)]">
-                  Workspaces
+                  Dashboards
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold text-slate-950">Open a role dashboard</h2>
+                <h2 className="mt-2 text-2xl font-semibold text-slate-950">Open a dashboard</h2>
               </div>
             </div>
 

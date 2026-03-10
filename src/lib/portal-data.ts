@@ -374,9 +374,9 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
 
   if (role === "admin") {
     return {
-      eyebrow: "Admin Dashboard",
-      title: "Manage vendors, reviews, and active jobs",
-      description: "Track onboarding, follow pending approvals, and act on the next records in queue.",
+      eyebrow: "Admin",
+      title: "Vendors and jobs",
+      description: "Current queue and open actions.",
       metrics: [
         {
           label: "Vendors awaiting action",
@@ -402,17 +402,17 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
       priorityQueue: [
         {
           title: `${liveNorthwind?.companyName ?? "Vendor"} onboarding`,
-          detail: `Deadline ${liveNorthwind?.onboardingDeadline ?? "TBD"}. ${liveNorthwindProgress.uploaded}/${liveNorthwindProgress.total} documents uploaded and ${liveNorthwindProgress.approved} fully approved.`,
+          detail: `Deadline ${liveNorthwind?.onboardingDeadline ?? "TBD"}. ${liveNorthwindProgress.uploaded}/${liveNorthwindProgress.total} files uploaded. ${liveNorthwindProgress.approved} approved.`,
           status: "Review today",
         },
         {
           title: "JR-2026-014 quote window",
-          detail: "A new CCTV job is live. Review incoming quotes and shortlist a vendor after the deadline.",
+          detail: "Review incoming quotes and shortlist a vendor after the deadline.",
           status: "Monitor quotes",
         },
         {
           title: "JR-2026-009 completion approval",
-          detail: "The vendor uploaded the completion form on 2026-03-09. One approver decision is still outstanding.",
+          detail: "Uploaded 2026-03-09. One approver decision is outstanding.",
           status: "Awaiting second sign-off",
         },
       ],
@@ -433,20 +433,20 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
       alerts: [
         {
           title: "Deadline watch",
-          detail: "Follow vendors approaching onboarding deadlines this week.",
+          detail: "Vendors nearing onboarding deadline.",
         },
         {
           title: "Award approvals",
-          detail: "Assignments stay blocked until the approval chain is complete.",
+          detail: "Assignments waiting on approval.",
         },
         {
           title: "Completion status",
-          detail: "Watch uploaded completion evidence that still needs sign-off.",
+          detail: "Completion files still in review.",
         },
       ],
       table: {
         title: "Records",
-        description: "Current vendor and job items needing admin attention.",
+        description: "Items needing admin action.",
         columns: ["Record", "Owner", "Current stage", "Next step"],
         rows: [
           [
@@ -476,9 +476,9 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
     const invoiceReadyCount = liveVendorFocusedJobs.filter(canSubmitInvoice).length;
 
     return {
-      eyebrow: "Vendor Workspace",
-      title: "Upload onboarding files and follow job activity",
-      description: "See what is missing, what is under review, and which jobs need your response.",
+      eyebrow: "Vendor",
+      title: "Files and jobs",
+      description: "Missing items, review status, and open jobs.",
       metrics: [
         {
           label: "Onboarding deadline",
@@ -504,17 +504,17 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
       priorityQueue: [
         {
           title: "Upload missing tax certificate",
-          detail: `${liveNorthwind?.companyName ?? "The vendor"} still needs to upload the Tax Clearance Certificate before verification can complete.`,
+          detail: `${liveNorthwind?.companyName ?? "Vendor"} still needs the Tax Clearance Certificate.`,
           status: "Vendor action",
         },
         {
           title: "Respond to JR-2026-014",
-          detail: "A new CCTV job matches the vendor category list and is open for quote submission.",
+          detail: "Open for quote submission.",
           status: "Submit quote",
         },
         {
           title: "HQ network recabling",
-          detail: "The assignment is approved and the vendor can upload the job completion form once work is finished.",
+          detail: "Upload completion file when work is finished.",
           status: "Execution in progress",
         },
       ],
@@ -543,19 +543,19 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
         },
         {
           title: "Completion approvals",
-          detail: "Track when job evidence has been cleared for invoicing.",
+          detail: "Jobs cleared for invoicing.",
         },
       ],
       table: {
         title: "Records",
-        description: "Current onboarding and job items for this vendor workspace.",
+        description: "Current vendor items.",
         columns: ["Item", "Type", "Status", "What the vendor can do"],
         rows: [
           [
             "Tax Clearance Certificate",
             "Onboarding document",
             "Missing upload",
-            "Upload the file before 2026-03-22",
+            "Upload before 2026-03-22",
           ],
           [
             "JR-2026-014",
@@ -582,9 +582,9 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
     ).length;
 
     return {
-      eyebrow: "Approver Dashboard",
+      eyebrow: "Approver",
       title: "Review pending approvals",
-      description: "Handle the second approval step for onboarding, assignments, and completion evidence.",
+      description: "Current approvals waiting on review.",
       metrics: [
         {
           label: "Pending second approvals",
@@ -610,18 +610,18 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
       priorityQueue: [
         {
           title: "Northwind Telecoms registration form",
-          detail: "Admin approval is already complete. The approver decision is the final step before that document clears.",
+          detail: "Admin approved. Final approver decision pending.",
           status: "Review now",
         },
         {
           title: "JR-2026-009 completion form",
-          detail: "Vendor completion evidence is waiting on the approver before invoice submission is unlocked.",
+          detail: "Approver decision pending.",
           status: "Final check",
         },
         {
-          title: "Future assignment approvals",
-          detail: "Every award decision created by admin lands here as a second-line approval task.",
-          status: "Workflow guardrail",
+          title: "JR-2026-014 assignment",
+          detail: "Awaiting shortlist completion.",
+          status: "Pending",
         },
       ],
       actions: [
@@ -649,12 +649,12 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
         },
         {
           title: "Returned submissions",
-          detail: "Track records that need vendor or admin follow-up.",
+          detail: "Records returned for updates.",
         },
       ],
       table: {
         title: "Records",
-        description: "Approval items currently waiting on the approver role.",
+        description: "Items waiting on approver action.",
         columns: ["Record", "Area", "Current state", "Decision needed"],
         rows: [
           [
@@ -684,9 +684,9 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
   const fullyApprovedJobs = liveJobs.filter((job) => isApproved(job.completionApproval)).length;
 
   return {
-    eyebrow: "Internal Control Dashboard",
+    eyebrow: "Internal Control",
     title: "Monitor deadlines and exceptions",
-    description: "Track records that need escalation, follow overdue items, and keep an audit-ready view.",
+    description: "Overdue items, missing evidence, and exceptions.",
     metrics: [
       {
         label: "Open exceptions",
@@ -712,49 +712,49 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
     priorityQueue: [
         {
           title: `${liveNorthwind?.companyName ?? "Vendor"} nearing SLA threshold`,
-          detail: `Created on ${liveNorthwind?.createdAt ?? "TBD"} with deadline ${liveNorthwind?.onboardingDeadline ?? "TBD"}. Missing evidence should be escalated if no response arrives.`,
+          detail: `Created ${liveNorthwind?.createdAt ?? "TBD"}. Deadline ${liveNorthwind?.onboardingDeadline ?? "TBD"}.`,
           status: "Watchlist",
         },
       {
         title: "JR-2026-009 pending completion approval",
-        detail: "One outstanding approver decision is delaying invoice readiness and should be monitored for turnaround time.",
+        detail: "Outstanding approver decision.",
         status: "SLA monitor",
       },
       {
-        title: "Evidence retention design",
-        detail: "Uploaded documents, completion forms, and invoices should retain immutable metadata for audit review.",
-        status: "Control design",
+        title: "JR-2026-006 invoice record",
+        detail: "Completion approved. Invoice submitted.",
+        status: "Filed",
       },
     ],
-      actions: [
-        {
-          title: "Watch overdue approvals",
-          detail: "Flag records that have stalled in onboarding or review.",
-        },
-        {
-          title: "Check missing evidence",
-          detail: "Follow vendors or jobs that still lack required supporting files.",
-        },
-        {
-          title: "Prepare control reports",
-          detail: "Keep the watchlist current for audit and escalation follow-up.",
-        },
-      ],
-      alerts: [
-        {
-          title: "Deadline breaches",
-          detail: "Escalate records that are close to missing SLA targets.",
-        },
-        {
-          title: "Approval delays",
-          detail: "Track queues where review turnaround is slipping.",
-        },
-        {
-          title: "Invoice blockers",
-          detail: "Watch jobs that cannot move forward because approvals are incomplete.",
-        },
-      ],
-      table: {
+    actions: [
+      {
+        title: "Watch overdue approvals",
+        detail: "Flag records stalled in review.",
+      },
+      {
+        title: "Check missing evidence",
+        detail: "Follow items with missing files.",
+      },
+      {
+        title: "Prepare reports",
+        detail: "Keep the watchlist current.",
+      },
+    ],
+    alerts: [
+      {
+        title: "Deadline breaches",
+        detail: "Records close to SLA breach.",
+      },
+      {
+        title: "Approval delays",
+        detail: "Queues with slow turnaround.",
+      },
+      {
+        title: "Invoice blockers",
+        detail: "Jobs blocked by incomplete approvals.",
+      },
+    ],
+    table: {
       title: "Records",
       description: "Watchlist of records that need control follow-up.",
       columns: ["Record", "Risk", "Current observation", "Control response"],
@@ -775,7 +775,7 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
           "JR-2026-006",
           "Invoice readiness",
           "Completion fully approved and invoice uploaded",
-          "Keep record available for later ERP sync",
+          "Record complete",
         ],
       ],
     },

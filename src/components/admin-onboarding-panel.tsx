@@ -152,36 +152,62 @@ export async function AdminOnboardingPanel({
 }: {
   statusMessage?: PanelStatusMessage | null;
 }) {
-  const prisma = getPrismaClient();
-  const [templates, vendors] = await Promise.all([
-    prisma.onboardingDocumentTemplate.findMany({
-      orderBy: {
-        createdAt: "asc",
-      },
-      include: {
-        uploadedBy: true,
-        _count: {
-          select: {
-            submissions: true,
-          },
-        },
-      },
-    }),
-    prisma.vendor.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-      include: {
-        accountOwner: true,
-        _count: {
-          select: {
-            documents: true,
-          },
-        },
-      },
-    }),
-  ]);
   const storageBackendLabel = getStorageBackendLabel();
+  let templates;
+  let vendors;
+  try {
+    const prisma = getPrismaClient();
+    [templates, vendors] = await Promise.all([
+      prisma.onboardingDocumentTemplate.findMany({
+        orderBy: {
+          createdAt: "asc",
+        },
+        include: {
+          uploadedBy: true,
+          _count: {
+            select: {
+              submissions: true,
+            },
+          },
+        },
+      }),
+      prisma.vendor.findMany({
+        orderBy: {
+          createdAt: "desc",
+        },
+        include: {
+          accountOwner: true,
+          _count: {
+            select: {
+              documents: true,
+            },
+          },
+        },
+      }),
+    ]);
+  } catch (error) {
+    const loadError =
+      error instanceof Error ? error.message : "Admin records are unavailable right now.";
+
+    return (
+      <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+        {statusMessage ? (
+          <article
+            className={`lg:col-span-2 rounded-[1.5rem] border px-5 py-4 text-sm shadow-sm ${
+              statusMessage.type === "error"
+                ? "border-amber-200 bg-amber-50 text-amber-900"
+                : "border-emerald-200 bg-emerald-50 text-emerald-900"
+            }`}
+          >
+            {statusMessage.text}
+          </article>
+        ) : null}
+        <article className="lg:col-span-2 rounded-[1.5rem] border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900 shadow-sm">
+          Admin records are unavailable. {loadError}
+        </article>
+      </div>
+    );
+  }
   const templateDownloadUrls = await Promise.all(
     templates.map(async (template) => ({
       id: template.id,
@@ -210,9 +236,7 @@ export async function AdminOnboardingPanel({
           <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--portal-blue)]">
             Invite vendor
           </p>
-          <h2 className="mt-3 text-2xl font-semibold text-slate-950">
-            Create a vendor account and start the onboarding SLA.
-          </h2>
+          <h2 className="mt-3 text-2xl font-semibold text-slate-950">Create vendor account</h2>
           <form action={inviteVendorAction} className="mt-6 grid gap-4">
             <input
               required
@@ -286,11 +310,9 @@ export async function AdminOnboardingPanel({
 
       <article className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_30px_80px_-55px_rgba(15,23,42,0.45)]">
         <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--portal-blue)]">
-          Onboarding template pack
+          Templates
         </p>
-        <h2 className="mt-3 text-2xl font-semibold text-slate-950">
-          Upload the blank forms vendors must download and reupload.
-        </h2>
+        <h2 className="mt-3 text-2xl font-semibold text-slate-950">Upload required files</h2>
         <p className="mt-3 text-sm leading-6 text-slate-600">
           Files are stored using <span className="font-semibold">{storageBackendLabel}</span>.
         </p>
@@ -304,7 +326,7 @@ export async function AdminOnboardingPanel({
           <textarea
             name="description"
             rows={3}
-            placeholder="Explain what the vendor should complete in this document."
+            placeholder="Short note for vendors"
             className="rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-[var(--portal-blue)]"
           />
           <label className="grid gap-2 rounded-2xl border border-dashed border-slate-300 px-4 py-4 text-sm text-slate-700">
@@ -316,7 +338,7 @@ export async function AdminOnboardingPanel({
               className="block w-full text-sm file:mr-4 file:rounded-full file:border-0 file:bg-slate-950 file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-slate-800"
             />
             <span className="text-xs text-slate-500">
-              Supported by your browser upload flow. Keep each file under 20 MB.
+              Max file size: 20 MB.
             </span>
           </label>
           <label className="flex items-center gap-3 rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-700">
@@ -358,12 +380,12 @@ export async function AdminOnboardingPanel({
                   rel="noreferrer"
                   className="mt-3 inline-flex rounded-full border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-900 transition hover:border-slate-400 hover:bg-white"
                 >
-                  Download uploaded template
+                  Open file
                 </a>
               ) : null}
               <p className="mt-2 text-sm leading-6 text-slate-600">
                 Uploaded by {template.uploadedBy?.email ?? "system"}.
-                Vendor submissions linked: {template._count.submissions}.
+                Submissions: {template._count.submissions}.
               </p>
             </div>
           ))}
