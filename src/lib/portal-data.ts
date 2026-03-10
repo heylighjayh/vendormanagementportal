@@ -188,12 +188,11 @@ export const jobs: JobRecord[] = [
 ];
 
 const vendorSummary = getVendorStatusSummary(vendors);
-const jobSummary = getJobSummary(jobs);
-const northwind = vendors[1];
-const northwindProgress = getDocumentProgress(northwind.documents);
-const vendorFocusedJobs = jobs.filter(
-  (job) => job.assignedVendor === "Blue Ridge Systems" || job.status === "open-for-quotes",
-);
+
+type DashboardSource = {
+  vendors?: VendorRecord[];
+  jobs?: JobRecord[];
+};
 
 export const portalHighlights = [
   {
@@ -218,7 +217,7 @@ export const lifecycleModules = [
     badge: "01",
     title: "Vendor Onboarding",
     description:
-      "Invite vendors with any email address, issue document templates, track uploads, and apply the dual approval rule before verification.",
+      "Admins upload the blank onboarding templates vendors must download, complete, and reupload; the portal then tracks every submission and approval.",
     outcome: "Verified vendors are the only vendors that can participate in sourcing.",
   },
   {
@@ -261,7 +260,7 @@ export const processSteps = [
   {
     title: "Document download, upload, and tracking",
     description:
-      "Vendors download forms, complete them offline, and reupload them. Every file keeps upload and approval status.",
+      "Admins upload the blank forms first, then vendors download them, complete them offline, and reupload the finished copies. Every file keeps upload and approval status.",
     gate: "Admin and approver both review required documents",
   },
   {
@@ -359,7 +358,20 @@ export function isRole(value: string): value is Role {
   return roles.includes(value as Role);
 }
 
-export function getDashboardConfig(role: Role): DashboardConfig {
+export function getDashboardConfig(role: Role, source?: DashboardSource): DashboardConfig {
+  const liveVendors = source?.vendors ?? vendors;
+  const liveJobs = source?.jobs ?? jobs;
+  const liveVendorSummary = getVendorStatusSummary(liveVendors);
+  const liveJobSummary = getJobSummary(liveJobs);
+  const liveNorthwind =
+    liveVendors.find((vendor) => vendor.companyName === "Northwind Telecoms") ?? liveVendors[0];
+  const liveNorthwindProgress = liveNorthwind
+    ? getDocumentProgress(liveNorthwind.documents)
+    : { total: 0, uploaded: 0, approved: 0 };
+  const liveVendorFocusedJobs = liveJobs.filter(
+    (job) => job.assignedVendor === "Blue Ridge Systems" || job.status === "open-for-quotes",
+  );
+
   if (role === "admin") {
     return {
       eyebrow: "Admin Dashboard",
@@ -369,29 +381,29 @@ export function getDashboardConfig(role: Role): DashboardConfig {
       metrics: [
         {
           label: "Vendors awaiting action",
-          value: `${vendorSummary.collecting}`,
+          value: `${liveVendorSummary.collecting}`,
           description: "Invited or under-review vendors still inside the onboarding process.",
         },
         {
           label: "Jobs open for quotes",
-          value: `${jobSummary.open}`,
+          value: `${liveJobSummary.open}`,
           description: "Category-based requests currently visible to verified vendors.",
         },
         {
           label: "Assignment approvals pending",
-          value: `${jobSummary.assignmentPending}`,
+          value: `${liveJobSummary.assignmentPending}`,
           description: "Award decisions waiting for a full approval chain.",
         },
         {
           label: "Completion forms under review",
-          value: `${jobSummary.completionPending}`,
+          value: `${liveJobSummary.completionPending}`,
           description: "Job evidence submitted but not fully approved yet.",
         },
       ],
       priorityQueue: [
         {
-          title: `${northwind.companyName} onboarding`,
-          detail: `Deadline ${northwind.onboardingDeadline}. ${northwindProgress.uploaded}/${northwindProgress.total} documents uploaded and ${northwindProgress.approved} fully approved.`,
+          title: `${liveNorthwind?.companyName ?? "Vendor"} onboarding`,
+          detail: `Deadline ${liveNorthwind?.onboardingDeadline ?? "TBD"}. ${liveNorthwindProgress.uploaded}/${liveNorthwindProgress.total} documents uploaded and ${liveNorthwindProgress.approved} fully approved.`,
           status: "Review today",
         },
         {
@@ -408,7 +420,7 @@ export function getDashboardConfig(role: Role): DashboardConfig {
       actions: [
         {
           title: "Create vendor accounts with a 14-day SLA",
-          detail: "Each invitation should immediately schedule day 0, day 7, day 12, and deadline reminders.",
+          detail: "Each invitation should immediately schedule day 0, day 7, day 12, and deadline reminders after the admin uploads the onboarding template pack.",
         },
         {
           title: "Restrict job creation to admins",
@@ -463,7 +475,7 @@ export function getDashboardConfig(role: Role): DashboardConfig {
   }
 
   if (role === "vendor") {
-    const invoiceReadyCount = vendorFocusedJobs.filter(canSubmitInvoice).length;
+    const invoiceReadyCount = liveVendorFocusedJobs.filter(canSubmitInvoice).length;
 
     return {
       eyebrow: "Vendor Workspace",
@@ -473,17 +485,17 @@ export function getDashboardConfig(role: Role): DashboardConfig {
       metrics: [
         {
           label: "Onboarding deadline",
-          value: northwind.onboardingDeadline,
+          value: liveNorthwind?.onboardingDeadline ?? "TBD",
           description: "Example 14-day deadline shown with reminder automation.",
         },
         {
           label: "Documents uploaded",
-          value: `${northwindProgress.uploaded}/${northwindProgress.total}`,
+          value: `${liveNorthwindProgress.uploaded}/${liveNorthwindProgress.total}`,
           description: "The portal tracks every required onboarding file individually.",
         },
         {
           label: "Jobs in view",
-          value: `${vendorFocusedJobs.length}`,
+          value: `${liveVendorFocusedJobs.length}`,
           description: "Open opportunities plus jobs already assigned to the vendor.",
         },
         {
@@ -495,7 +507,7 @@ export function getDashboardConfig(role: Role): DashboardConfig {
       priorityQueue: [
         {
           title: "Upload missing tax certificate",
-          detail: "Northwind Telecoms still needs to upload the Tax Clearance Certificate before verification can complete.",
+          detail: `${liveNorthwind?.companyName ?? "The vendor"} still needs to upload the Tax Clearance Certificate before verification can complete.`,
           status: "Vendor action",
         },
         {
@@ -512,7 +524,7 @@ export function getDashboardConfig(role: Role): DashboardConfig {
       actions: [
         {
           title: "Download, complete, and reupload templates",
-          detail: "The onboarding module expects structured document templates that can be reused for every vendor.",
+          detail: "The vendor downloads the admin-managed template pack, completes each file offline, and reuploads the finished copies into the same onboarding lane.",
         },
         {
           title: "Track approval status per file",
@@ -567,7 +579,7 @@ export function getDashboardConfig(role: Role): DashboardConfig {
   }
 
   if (role === "approver") {
-    const pendingApprovals = jobs.filter(
+    const pendingApprovals = liveJobs.filter(
       (job) =>
         job.assignmentApproval.approver === "pending" ||
         job.completionApproval.approver === "pending",
@@ -591,12 +603,12 @@ export function getDashboardConfig(role: Role): DashboardConfig {
         },
         {
           label: "Completion reviews",
-          value: `${jobSummary.completionPending}`,
+          value: `${liveJobSummary.completionPending}`,
           description: "Completion evidence that needs a second sign-off.",
         },
         {
           label: "Award decisions",
-          value: `${jobSummary.assignmentPending}`,
+          value: `${liveJobSummary.assignmentPending}`,
           description: "Assignments blocked until the approver records a decision.",
         },
       ],
@@ -674,8 +686,8 @@ export function getDashboardConfig(role: Role): DashboardConfig {
     };
   }
 
-  const overdueVendor = vendors.find((vendor) => vendor.status !== "verified");
-  const fullyApprovedJobs = jobs.filter((job) => isApproved(job.completionApproval)).length;
+  const overdueVendor = liveVendors.find((vendor) => vendor.status !== "verified");
+  const fullyApprovedJobs = liveJobs.filter((job) => isApproved(job.completionApproval)).length;
 
   return {
     eyebrow: "Internal Control Dashboard",
@@ -705,11 +717,11 @@ export function getDashboardConfig(role: Role): DashboardConfig {
       },
     ],
     priorityQueue: [
-      {
-        title: `${northwind.companyName} nearing SLA threshold`,
-        detail: `Created on ${northwind.createdAt} with deadline ${northwind.onboardingDeadline}. Missing evidence should be escalated if no response arrives.`,
-        status: "Watchlist",
-      },
+        {
+          title: `${liveNorthwind?.companyName ?? "Vendor"} nearing SLA threshold`,
+          detail: `Created on ${liveNorthwind?.createdAt ?? "TBD"} with deadline ${liveNorthwind?.onboardingDeadline ?? "TBD"}. Missing evidence should be escalated if no response arrives.`,
+          status: "Watchlist",
+        },
       {
         title: "JR-2026-009 pending completion approval",
         detail: "One outstanding approver decision is delaying invoice readiness and should be monitored for turnaround time.",

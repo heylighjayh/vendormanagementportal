@@ -30,6 +30,7 @@ export type DualApproval = {
 
 export type OnboardingDocument = {
   name: string;
+  templatePath?: string;
   uploadedAt?: string;
   approval: DualApproval;
 };

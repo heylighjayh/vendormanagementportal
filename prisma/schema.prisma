@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -37,18 +36,21 @@ enum JobStatus {
 }
 
 model User {
-  id            String   @id @default(cuid())
-  name          String?
-  email         String   @unique
-  role          Role
-  createdAt     DateTime @default(now())
-  vendor        Vendor?
-  approvals     ApprovalDecision[]
-  notifications NotificationEvent[]
+  id               String                      @id @default(cuid())
+  name             String?
+  email            String                      @unique
+  role             Role
+  createdAt        DateTime                    @default(now())
+  vendor           Vendor?
+  createdJobs      JobRequest[]
+  uploadedTemplates OnboardingDocumentTemplate[] @relation("TemplateUploader")
+  approvals        ApprovalDecision[]
+  notifications    NotificationEvent[]
 }
 
 model Vendor {
   id                 String           @id @default(cuid())
+  reference          String           @unique
   accountOwnerId     String?          @unique
   accountOwner       User?            @relation(fields: [accountOwnerId], references: [id])
   companyName        String
@@ -60,14 +62,20 @@ model Vendor {
   documents          VendorDocument[]
   quotes             JobQuote[]
   assignments        JobAssignment[]
+
+  @@index([status])
 }
 
 model OnboardingDocumentTemplate {
-  id          String           @id @default(cuid())
-  name        String
-  isRequired  Boolean          @default(true)
-  createdAt   DateTime         @default(now())
-  submissions VendorDocument[]
+  id                  String           @id @default(cuid())
+  name                String
+  description         String?
+  templateStoragePath String
+  isRequired          Boolean          @default(true)
+  uploadedById        String?
+  uploadedBy          User?            @relation("TemplateUploader", fields: [uploadedById], references: [id])
+  createdAt           DateTime         @default(now())
+  submissions         VendorDocument[]
 }
 
 model VendorDocument {
@@ -95,6 +103,8 @@ model JobRequest {
   assignment           JobAssignment?
   completionSubmission JobCompletionSubmission?
   invoiceSubmission    InvoiceSubmission?
+
+  @@index([status, category])
 }
 
 model JobQuote {

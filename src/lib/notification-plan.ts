@@ -35,14 +35,20 @@ export const notificationBlueprint = [
   },
 ];
 
-export function buildNotificationPreview() {
+export function buildNotificationPreview(data?: {
+  vendors?: typeof vendors;
+  jobs?: typeof jobs;
+}) {
+  const liveVendors = data?.vendors ?? vendors;
+  const liveJobs = data?.jobs ?? jobs;
+
   return {
     reminders: onboardingReminderOffsets,
-    vendors: vendors.map((vendor) => ({
+    vendors: liveVendors.map((vendor) => ({
       vendor: vendor.companyName,
       deadline: vendor.onboardingDeadline,
     })),
-    jobAlerts: jobs.map((job) => ({
+    jobAlerts: liveJobs.map((job) => ({
       jobId: job.id,
       category: job.category,
       status: job.status,

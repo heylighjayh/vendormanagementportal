@@ -1,7 +1,21 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
+import { signOut } from "@/auth";
 import type { DashboardConfig } from "@/lib/portal-types";
 
-export function DashboardView({ dashboard }: { dashboard: DashboardConfig }) {
+export function DashboardView({
+  dashboard,
+  currentUser,
+  children,
+}: {
+  dashboard: DashboardConfig;
+  currentUser?: {
+    name?: string | null;
+    email?: string | null;
+    role?: string;
+  };
+  children?: ReactNode;
+}) {
   return (
     <main className="min-h-screen bg-[var(--portal-bg)] text-slate-900">
       <section className="border-b border-slate-200 bg-[linear-gradient(180deg,#f5f8ff_0%,#ffffff_100%)]">
@@ -20,7 +34,17 @@ export function DashboardView({ dashboard }: { dashboard: DashboardConfig }) {
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap items-center gap-3">
+                {currentUser ? (
+                  <div className="flex items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700">
+                    <span className="font-semibold text-slate-900">
+                      {currentUser.name ?? currentUser.email}
+                    </span>
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
+                      {currentUser.role}
+                    </span>
+                  </div>
+                ) : null}
                 <Link
                   href="/"
                   className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:border-slate-400 hover:bg-slate-50"
@@ -33,6 +57,19 @@ export function DashboardView({ dashboard }: { dashboard: DashboardConfig }) {
                 >
                   Architecture
                 </Link>
+                <form
+                  action={async () => {
+                    "use server";
+                    await signOut({ redirectTo: "/" });
+                  }}
+                >
+                  <button
+                    type="submit"
+                    className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:border-slate-400 hover:bg-slate-50"
+                  >
+                    Sign out
+                  </button>
+                </form>
               </div>
             </div>
 
@@ -156,6 +193,12 @@ export function DashboardView({ dashboard }: { dashboard: DashboardConfig }) {
           </article>
         </div>
       </section>
+
+      {children ? (
+        <section className="mx-auto w-full max-w-7xl px-6 pb-16 sm:px-8 lg:px-12">
+          {children}
+        </section>
+      ) : null}
     </main>
   );
 }

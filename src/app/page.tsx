@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { auth, signOut } from "@/auth";
 import { CompanyLogo } from "@/components/company-logo";
+import { getDashboardHref } from "@/lib/role-utils";
 import {
   dashboardRoutes,
   lifecycleModules,
@@ -31,7 +33,10 @@ function SectionTitle({
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
+  const dashboardHref = session?.user?.role ? getDashboardHref(session.user.role) : "/login";
+
   return (
     <main className="min-h-screen bg-[var(--portal-bg)] text-slate-900">
       <section className="relative overflow-hidden border-b border-slate-200/70">
@@ -57,6 +62,22 @@ export default function Home() {
               >
                 View architecture
               </Link>
+              {session?.user ? (
+                <form
+                  action={async () => {
+                    "use server";
+                    await signOut({ redirectTo: "/" });
+                  }}
+                >
+                  <button className="rounded-full px-4 py-2 hover:bg-slate-100">
+                    Sign out
+                  </button>
+                </form>
+              ) : (
+                <Link className="rounded-full px-4 py-2 hover:bg-slate-100" href="/login">
+                  Sign in
+                </Link>
+              )}
             </nav>
           </header>
 
@@ -82,9 +103,9 @@ export default function Home() {
               <div className="flex flex-wrap gap-4">
                 <Link
                   className="rounded-full bg-[var(--portal-blue)] px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_40px_-18px_rgba(31,93,199,0.75)] transition hover:bg-[#184ca8]"
-                  href="/dashboard/admin"
+                  href={dashboardHref}
                 >
-                  Open admin command center
+                  {session?.user ? "Open my workspace" : "Sign in to workspace"}
                 </Link>
                 <Link
                   className="rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-400 hover:bg-slate-50"
@@ -303,8 +324,8 @@ export default function Home() {
               </h2>
               <p className="mt-4 text-base leading-7 text-slate-600">
                 The codebase already includes the workflow model, sample dashboards,
-                database schema draft, and integration stubs so the next iteration can go
-                straight into production features.
+                database schema, auth scaffolding, and integration stubs so the next
+                iteration can go straight into production features.
               </p>
             </div>
 
