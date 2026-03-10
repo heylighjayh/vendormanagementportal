@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { AdminOnboardingPanel } from "@/components/admin-onboarding-panel";
 import { DashboardView } from "@/components/dashboard-view";
+import { JobRegisterPanel } from "@/components/job-register-panel";
 import { VendorOnboardingPanel } from "@/components/vendor-onboarding-panel";
 import { getPortalSnapshot } from "@/lib/portal-repository";
 import { getDashboardConfig, isRole } from "@/lib/portal-data";
@@ -13,6 +14,7 @@ type PageProps = {
   searchParams: Promise<{
     error?: string | string[];
     success?: string | string[];
+    job?: string | string[];
   }>;
 };
 
@@ -45,6 +47,7 @@ export default async function RoleDashboardPage({ params, searchParams }: PagePr
   const dashboard = getDashboardConfig(role, snapshot);
   const errorMessage = getStatusParam(resolvedSearchParams.error);
   const successMessage = getStatusParam(resolvedSearchParams.success);
+  const selectedJobReference = getStatusParam(resolvedSearchParams.job);
   const statusMessage = errorMessage
     ? { type: "error" as const, text: errorMessage }
     : successMessage
@@ -53,11 +56,38 @@ export default async function RoleDashboardPage({ params, searchParams }: PagePr
 
   return (
     <DashboardView dashboard={dashboard} currentUser={session.user}>
-      {role === "admin" ? <AdminOnboardingPanel statusMessage={statusMessage} /> : null}
+      {role === "admin" ? (
+        <AdminOnboardingPanel
+          statusMessage={statusMessage}
+        />
+      ) : null}
+      {role === "admin" ? (
+        <JobRegisterPanel
+          role={role}
+          selectedJobReference={selectedJobReference}
+          statusMessage={statusMessage}
+        />
+      ) : null}
       {role === "vendor" ? (
         <VendorOnboardingPanel
           userId={session.user.id}
           email={session.user.email}
+          statusMessage={statusMessage}
+        />
+      ) : null}
+      {role === "vendor" ? (
+        <JobRegisterPanel
+          role={role}
+          userId={session.user.id}
+          email={session.user.email}
+          selectedJobReference={selectedJobReference}
+          statusMessage={statusMessage}
+        />
+      ) : null}
+      {role === "approver" || role === "internal-control-reviewer" ? (
+        <JobRegisterPanel
+          role={role}
+          selectedJobReference={selectedJobReference}
           statusMessage={statusMessage}
         />
       ) : null}

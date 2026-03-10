@@ -194,6 +194,74 @@ type DashboardSource = {
   jobs?: JobRecord[];
 };
 
+function formatJobStatusLabel(status: JobRecord["status"]) {
+  return status.replaceAll("-", " ");
+}
+
+function buildAdminRows(liveJobs: JobRecord[]) {
+  if (liveJobs.length === 0) {
+    return [["No jobs yet", "-", "-", "Create a job"]];
+  }
+
+  return liveJobs.slice(0, 3).map((job) => [
+    job.id,
+    job.assignedVendor ?? job.category,
+    formatJobStatusLabel(job.status),
+    job.assignedVendor ? "Open job detail" : "Assign a vendor",
+  ]);
+}
+
+function buildVendorRows(liveJobs: JobRecord[]) {
+  if (liveJobs.length === 0) {
+    return [["No jobs yet", "-", "-", "No action"]];
+  }
+
+  return liveJobs.slice(0, 3).map((job) => [
+    job.id,
+    job.assignedVendor ? "Assigned job" : "Open job",
+    formatJobStatusLabel(job.status),
+    job.invoiceUploadedAt
+      ? "View invoice trail"
+      : job.completionUploadedAt
+        ? "Watch review status"
+        : job.assignedVendor
+          ? "Open job detail"
+          : "Review job detail",
+  ]);
+}
+
+function buildApproverRows(liveJobs: JobRecord[]) {
+  const pendingJobs = liveJobs.filter(
+    (job) =>
+      job.assignmentApproval.approver === "pending" ||
+      job.completionApproval.approver === "pending",
+  );
+
+  if (pendingJobs.length === 0) {
+    return [["No pending approvals", "-", "-", "No action"]];
+  }
+
+  return pendingJobs.slice(0, 3).map((job) => [
+    job.id,
+    job.completionUploadedAt ? "Completion review" : "Assignment review",
+    formatJobStatusLabel(job.status),
+    "Open job detail",
+  ]);
+}
+
+function buildControlRows(liveJobs: JobRecord[]) {
+  if (liveJobs.length === 0) {
+    return [["No tracked records", "-", "-", "No action"]];
+  }
+
+  return liveJobs.slice(0, 3).map((job) => [
+    job.id,
+    job.completionUploadedAt ? "Completion" : "Job",
+    formatJobStatusLabel(job.status),
+    "Open job detail",
+  ]);
+}
+
 export const portalHighlights = [
   {
     label: "Verified vendors",
@@ -448,26 +516,7 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
         title: "Records",
         description: "Items needing admin action.",
         columns: ["Record", "Owner", "Current stage", "Next step"],
-        rows: [
-          [
-            "VND-1002",
-            "Northwind Telecoms",
-            "Under review",
-            "Approver to review registration form and vendor to upload tax certificate",
-          ],
-          [
-            "JR-2026-014",
-            "CCTV Jobs",
-            "Open for quotes",
-            "Wait for more vendor quotes before award recommendation",
-          ],
-          [
-            "JR-2026-009",
-            "Sentinel Fire & Safety",
-            "Completion under review",
-            "Approver to record second approval decision",
-          ],
-        ],
+        rows: buildAdminRows(liveJobs),
       },
     };
   }
@@ -550,26 +599,7 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
         title: "Records",
         description: "Current vendor items.",
         columns: ["Item", "Type", "Status", "What the vendor can do"],
-        rows: [
-          [
-            "Tax Clearance Certificate",
-            "Onboarding document",
-            "Missing upload",
-            "Upload before 2026-03-22",
-          ],
-          [
-            "JR-2026-014",
-            "Quote opportunity",
-            "Open for quotes",
-            "Submit a quote before the sourcing window closes",
-          ],
-          [
-            "JR-2026-011",
-            "Assigned job",
-            "Assigned",
-            "Upload completion form after execution",
-          ],
-        ],
+        rows: buildVendorRows(liveVendorFocusedJobs),
       },
     };
   }
@@ -656,26 +686,7 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
         title: "Records",
         description: "Items waiting on approver action.",
         columns: ["Record", "Area", "Current state", "Decision needed"],
-        rows: [
-          [
-            "VND-1002 / Registration Form",
-            "Onboarding",
-            "Admin approved",
-            "Approve or request changes",
-          ],
-          [
-            "JR-2026-009",
-            "Completion verification",
-            "Vendor uploaded form on 2026-03-09",
-            "Approve completion or request correction",
-          ],
-          [
-            "JR-2026-014",
-            "Assignment",
-            "Awaiting shortlist completion",
-            "Approve the final vendor selection when submitted",
-          ],
-        ],
+        rows: buildApproverRows(liveJobs),
       },
     };
   }
@@ -758,26 +769,7 @@ export function getDashboardConfig(role: Role, source?: DashboardSource): Dashbo
       title: "Records",
       description: "Watchlist of records that need control follow-up.",
       columns: ["Record", "Risk", "Current observation", "Control response"],
-      rows: [
-        [
-          "VND-1002",
-          "Missed onboarding evidence",
-          "Tax certificate still missing",
-          "Escalate if still missing by 2026-03-22",
-        ],
-        [
-          "JR-2026-009",
-          "Approval delay",
-          "Completion awaiting approver",
-          "Monitor for turnaround breach",
-        ],
-        [
-          "JR-2026-006",
-          "Invoice readiness",
-          "Completion fully approved and invoice uploaded",
-          "Record complete",
-        ],
-      ],
+      rows: buildControlRows(liveJobs),
     },
   };
 }

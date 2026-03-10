@@ -78,6 +78,92 @@ async function createTemplateAction(formData: FormData) {
   redirect(buildDashboardRedirectUrl(statusMessage));
 }
 
+async function deleteTemplateAction(formData: FormData) {
+  "use server";
+
+  const statusMessage = await (async (): Promise<PanelStatusMessage> => {
+    try {
+      const session = await auth();
+
+      if (session?.user?.role !== "admin") {
+        throw new Error("Only admins can delete onboarding templates.");
+      }
+
+      const templateId = String(formData.get("templateId") ?? "").trim();
+
+      if (!templateId) {
+        throw new Error("Template id is required.");
+      }
+
+      const prisma = getPrismaClient();
+      const template = await prisma.onboardingDocumentTemplate.findUnique({
+        where: {
+          id: templateId,
+        },
+      });
+
+      if (!template) {
+        throw new Error("Template not found.");
+      }
+
+      const submissions = await prisma.vendorDocument.findMany({
+        where: {
+          templateId,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      const submissionIds = submissions.map((submission) => submission.id);
+
+      await prisma.$transaction(async (tx) => {
+        if (submissionIds.length > 0) {
+          await tx.approvalDecision.deleteMany({
+            where: {
+              vendorDocumentId: {
+                in: submissionIds,
+              },
+            },
+          });
+
+          await tx.vendorDocument.deleteMany({
+            where: {
+              id: {
+                in: submissionIds,
+              },
+            },
+          });
+        }
+
+        await tx.onboardingDocumentTemplate.delete({
+          where: {
+            id: templateId,
+          },
+        });
+      });
+
+      revalidatePath("/dashboard/admin");
+      revalidatePath("/dashboard/vendor");
+
+      return {
+        type: "success",
+        text: `${template.name} deleted.`,
+      };
+    } catch (error) {
+      return {
+        type: "error",
+        text:
+          error instanceof Error
+            ? error.message
+            : "We couldn't delete that template right now.",
+      };
+    }
+  })();
+
+  redirect(buildDashboardRedirectUrl(statusMessage));
+}
+
 async function inviteVendorAction(formData: FormData) {
   "use server";
 
@@ -383,6 +469,15 @@ export async function AdminOnboardingPanel({
                   Open file
                 </a>
               ) : null}
+              <form action={deleteTemplateAction} className="mt-3">
+                <input type="hidden" name="templateId" value={template.id} />
+                <button
+                  type="submit"
+                  className="inline-flex rounded-full border border-rose-200 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-50"
+                >
+                  Delete template
+                </button>
+              </form>
               <p className="mt-2 text-sm leading-6 text-slate-600">
                 Uploaded by {template.uploadedBy?.email ?? "system"}.
                 Submissions: {template._count.submissions}.
