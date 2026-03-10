@@ -6,6 +6,14 @@ const LOCAL_UPLOAD_ROOT = path.join(process.cwd(), "public", "uploads");
 const DEFAULT_BUCKET = "portal-files";
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
 
+function isVercelDeployment() {
+  return process.env["VERCEL"] === "1" || Boolean(process.env["VERCEL_ENV"]);
+}
+
+function canUseLocalDevelopmentUploads() {
+  return !isVercelDeployment();
+}
+
 function getSupabaseProjectUrl() {
   const explicitUrl =
     process.env["SUPABASE_URL"] ?? process.env["NEXT_PUBLIC_SUPABASE_URL"] ?? "";
@@ -49,7 +57,13 @@ function getSupabaseServiceRoleKey() {
 }
 
 export function getStorageBackendLabel() {
-  return isSupabaseStorageConfigured() ? "Supabase Storage" : "Local development uploads";
+  if (isSupabaseStorageConfigured()) {
+    return "Supabase Storage";
+  }
+
+  return canUseLocalDevelopmentUploads()
+    ? "Local development uploads"
+    : "Storage configuration required on Vercel";
 }
 
 export function isSupabaseStorageConfigured() {
@@ -169,6 +183,12 @@ export async function uploadPortalFile({
 
   if (file.size > MAX_UPLOAD_BYTES) {
     throw new Error("File is too large. Keep uploads under 20 MB for now.");
+  }
+
+  if (!isSupabaseStorageConfigured() && !canUseLocalDevelopmentUploads()) {
+    throw new Error(
+      "Uploads are not configured for this Vercel deployment. Add NEXT_PUBLIC_SUPABASE_URL (or SUPABASE_URL) and SUPABASE_SERVICE_ROLE_KEY in Vercel, then redeploy.",
+    );
   }
 
   const storagePath = buildStoragePath(area, entityKey, file.name);

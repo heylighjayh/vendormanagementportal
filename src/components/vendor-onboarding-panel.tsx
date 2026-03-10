@@ -1,4 +1,5 @@
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import {
   getStorageBackendLabel,
@@ -7,145 +8,176 @@ import {
 } from "@/lib/file-storage";
 import { getPrismaClient } from "@/lib/prisma";
 
+type PanelStatusMessage = {
+  type: "error" | "success";
+  text: string;
+};
+
+function buildDashboardRedirectUrl(message: PanelStatusMessage) {
+  const params = new URLSearchParams({
+    [message.type]: message.text,
+  });
+
+  return `/dashboard/vendor?${params.toString()}`;
+}
+
 async function submitOnboardingDocumentAction(formData: FormData) {
   "use server";
 
-  const session = await auth();
+  const statusMessage = await (async (): Promise<PanelStatusMessage> => {
+    try {
+      const session = await auth();
 
-  if (session?.user?.role !== "vendor") {
-    throw new Error("Only vendors can submit onboarding documents.");
-  }
+      if (session?.user?.role !== "vendor") {
+        throw new Error("Only vendors can submit onboarding documents.");
+      }
 
-  const templateId = String(formData.get("templateId") ?? "").trim();
-  const documentFile = formData.get("documentFile");
+      const templateId = String(formData.get("templateId") ?? "").trim();
+      const documentFile = formData.get("documentFile");
 
-  if (!templateId || !(documentFile instanceof File) || !session.user.email) {
-    throw new Error("Template and uploaded document file are required.");
-  }
+      if (!templateId || !(documentFile instanceof File) || !session.user.email) {
+        throw new Error("Template and uploaded document file are required.");
+      }
 
-  const prisma = getPrismaClient();
-  const vendor = await prisma.vendor.findFirst({
-    where: {
-      OR: [
-        { accountOwnerId: session.user.id },
-        { contactEmail: session.user.email },
-      ],
-    },
-  });
-
-  if (!vendor) {
-    throw new Error("Vendor account not found for the signed-in user.");
-  }
-
-  const template = await prisma.onboardingDocumentTemplate.findUnique({
-    where: { id: templateId },
-  });
-
-  if (!template) {
-    throw new Error("Template not found.");
-  }
-  const storagePath = await uploadPortalFile({
-    area: "vendor-submissions",
-    entityKey: `${vendor.reference}-${template.name}`,
-    file: documentFile,
-  });
-
-  const [admin, approver] = await Promise.all([
-    prisma.user.findFirst({ where: { role: "ADMIN" } }),
-    prisma.user.findFirst({ where: { role: "APPROVER" } }),
-  ]);
-
-  if (!admin || !approver) {
-    throw new Error("Approval users are missing.");
-  }
-
-  const existingDocument = await prisma.vendorDocument.findFirst({
-    where: {
-      vendorId: vendor.id,
-      templateId: template.id,
-    },
-    orderBy: {
-      uploadedAt: "desc",
-    },
-  });
-
-  const uploadedAt = new Date();
-
-  const vendorDocument = existingDocument
-    ? await prisma.vendorDocument.update({
+      const prisma = getPrismaClient();
+      const vendor = await prisma.vendor.findFirst({
         where: {
-          id: existingDocument.id,
-        },
-        data: {
-          storagePath,
-          uploadedAt,
-        },
-      })
-    : await prisma.vendorDocument.create({
-        data: {
-          vendorId: vendor.id,
-          templateId: template.id,
-          storagePath,
-          uploadedAt,
+          OR: [{ accountOwnerId: session.user.id }, { contactEmail: session.user.email }],
         },
       });
 
-  await prisma.approvalDecision.deleteMany({
-    where: {
-      vendorDocumentId: vendorDocument.id,
-    },
-  });
+      if (!vendor) {
+        throw new Error("Vendor account not found for the signed-in user.");
+      }
 
-  await prisma.approvalDecision.createMany({
-    data: [
-      {
-        reviewerId: admin.id,
-        state: "PENDING",
-        vendorDocumentId: vendorDocument.id,
-      },
-      {
-        reviewerId: approver.id,
-        state: "PENDING",
-        vendorDocumentId: vendorDocument.id,
-      },
-    ],
-  });
+      const template = await prisma.onboardingDocumentTemplate.findUnique({
+        where: { id: templateId },
+      });
 
-  const requiredTemplateIds = (
-    await prisma.onboardingDocumentTemplate.findMany({
-      where: { isRequired: true },
-      select: { id: true },
-    })
-  ).map((item) => item.id);
+      if (!template) {
+        throw new Error("Template not found.");
+      }
+      const storagePath = await uploadPortalFile({
+        area: "vendor-submissions",
+        entityKey: `${vendor.reference}-${template.name}`,
+        file: documentFile,
+      });
 
-  const uploadedRequiredCount = await prisma.vendorDocument.count({
-    where: {
-      vendorId: vendor.id,
-      templateId: {
-        in: requiredTemplateIds,
-      },
-    },
-  });
+      const [admin, approver] = await Promise.all([
+        prisma.user.findFirst({ where: { role: "ADMIN" } }),
+        prisma.user.findFirst({ where: { role: "APPROVER" } }),
+      ]);
 
-  await prisma.vendor.update({
-    where: { id: vendor.id },
-    data: {
-      status:
-        uploadedRequiredCount >= requiredTemplateIds.length && requiredTemplateIds.length > 0
-          ? "UNDER_REVIEW"
-          : "COLLECTING_DOCUMENTS",
-    },
-  });
+      if (!admin || !approver) {
+        throw new Error("Approval users are missing.");
+      }
 
-  revalidatePath("/dashboard/vendor");
+      const existingDocument = await prisma.vendorDocument.findFirst({
+        where: {
+          vendorId: vendor.id,
+          templateId: template.id,
+        },
+        orderBy: {
+          uploadedAt: "desc",
+        },
+      });
+
+      const uploadedAt = new Date();
+
+      const vendorDocument = existingDocument
+        ? await prisma.vendorDocument.update({
+            where: {
+              id: existingDocument.id,
+            },
+            data: {
+              storagePath,
+              uploadedAt,
+            },
+          })
+        : await prisma.vendorDocument.create({
+            data: {
+              vendorId: vendor.id,
+              templateId: template.id,
+              storagePath,
+              uploadedAt,
+            },
+          });
+
+      await prisma.approvalDecision.deleteMany({
+        where: {
+          vendorDocumentId: vendorDocument.id,
+        },
+      });
+
+      await prisma.approvalDecision.createMany({
+        data: [
+          {
+            reviewerId: admin.id,
+            state: "PENDING",
+            vendorDocumentId: vendorDocument.id,
+          },
+          {
+            reviewerId: approver.id,
+            state: "PENDING",
+            vendorDocumentId: vendorDocument.id,
+          },
+        ],
+      });
+
+      const requiredTemplateIds = (
+        await prisma.onboardingDocumentTemplate.findMany({
+          where: { isRequired: true },
+          select: { id: true },
+        })
+      ).map((item) => item.id);
+
+      const uploadedRequiredCount = await prisma.vendorDocument.count({
+        where: {
+          vendorId: vendor.id,
+          templateId: {
+            in: requiredTemplateIds,
+          },
+        },
+      });
+
+      await prisma.vendor.update({
+        where: { id: vendor.id },
+        data: {
+          status:
+            uploadedRequiredCount >= requiredTemplateIds.length && requiredTemplateIds.length > 0
+              ? "UNDER_REVIEW"
+              : "COLLECTING_DOCUMENTS",
+        },
+      });
+
+      revalidatePath("/dashboard/vendor");
+
+      return {
+        type: "success",
+        text: "Document uploaded successfully.",
+      };
+    } catch (error) {
+      return {
+        type: "error",
+        text:
+          error instanceof Error
+            ? error.message
+            : "We couldn't upload that document right now.",
+      };
+    }
+  })();
+
+  redirect(buildDashboardRedirectUrl(statusMessage));
 }
 
 export async function VendorOnboardingPanel({
   userId,
   email,
+  statusMessage,
 }: {
   userId: string;
   email?: string | null;
+  statusMessage?: PanelStatusMessage | null;
 }) {
   const prisma = getPrismaClient();
   const vendor = await prisma.vendor.findFirst({
@@ -200,6 +232,17 @@ export async function VendorOnboardingPanel({
 
   return (
     <div className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
+      {statusMessage ? (
+        <article
+          className={`lg:col-span-2 rounded-[1.5rem] border px-5 py-4 text-sm shadow-sm ${
+            statusMessage.type === "error"
+              ? "border-amber-200 bg-amber-50 text-amber-900"
+              : "border-emerald-200 bg-emerald-50 text-emerald-900"
+          }`}
+        >
+          {statusMessage.text}
+        </article>
+      ) : null}
       <article className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_30px_80px_-55px_rgba(15,23,42,0.45)]">
         <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--portal-blue)]">
           Submit completed onboarding file

@@ -1,4 +1,5 @@
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import {
   getStorageBackendLabel,
@@ -7,95 +8,150 @@ import {
 } from "@/lib/file-storage";
 import { getPrismaClient } from "@/lib/prisma";
 
+type PanelStatusMessage = {
+  type: "error" | "success";
+  text: string;
+};
+
+function buildDashboardRedirectUrl(message: PanelStatusMessage) {
+  const params = new URLSearchParams({
+    [message.type]: message.text,
+  });
+
+  return `/dashboard/admin?${params.toString()}`;
+}
+
 async function createTemplateAction(formData: FormData) {
   "use server";
 
-  const session = await auth();
+  const statusMessage = await (async (): Promise<PanelStatusMessage> => {
+    try {
+      const session = await auth();
 
-  if (session?.user?.role !== "admin") {
-    throw new Error("Only admins can create onboarding templates.");
-  }
+      if (session?.user?.role !== "admin") {
+        throw new Error("Only admins can create onboarding templates.");
+      }
 
-  const name = String(formData.get("name") ?? "").trim();
-  const description = String(formData.get("description") ?? "").trim();
-  const isRequired = formData.get("isRequired") === "on";
-  const templateFile = formData.get("templateFile");
+      const name = String(formData.get("name") ?? "").trim();
+      const description = String(formData.get("description") ?? "").trim();
+      const isRequired = formData.get("isRequired") === "on";
+      const templateFile = formData.get("templateFile");
 
-  if (!name || !(templateFile instanceof File)) {
-    throw new Error("Template name and file are required.");
-  }
+      if (!name || !(templateFile instanceof File)) {
+        throw new Error("Template name and file are required.");
+      }
 
-  const prisma = getPrismaClient();
-  const templateStoragePath = await uploadPortalFile({
-    area: "templates",
-    entityKey: name,
-    file: templateFile,
-  });
+      const prisma = getPrismaClient();
+      const templateStoragePath = await uploadPortalFile({
+        area: "templates",
+        entityKey: name,
+        file: templateFile,
+      });
 
-  await prisma.onboardingDocumentTemplate.create({
-    data: {
-      name,
-      description: description || null,
-      templateStoragePath,
-      isRequired,
-      uploadedById: session.user.id,
-    },
-  });
+      await prisma.onboardingDocumentTemplate.create({
+        data: {
+          name,
+          description: description || null,
+          templateStoragePath,
+          isRequired,
+          uploadedById: session.user.id,
+        },
+      });
 
-  revalidatePath("/dashboard/admin");
+      revalidatePath("/dashboard/admin");
+
+      return {
+        type: "success",
+        text: "Template uploaded successfully.",
+      };
+    } catch (error) {
+      return {
+        type: "error",
+        text:
+          error instanceof Error
+            ? error.message
+            : "We couldn't upload that template right now.",
+      };
+    }
+  })();
+
+  redirect(buildDashboardRedirectUrl(statusMessage));
 }
 
 async function inviteVendorAction(formData: FormData) {
   "use server";
 
-  const session = await auth();
+  const statusMessage = await (async (): Promise<PanelStatusMessage> => {
+    try {
+      const session = await auth();
 
-  if (session?.user?.role !== "admin") {
-    throw new Error("Only admins can create vendor accounts.");
-  }
+      if (session?.user?.role !== "admin") {
+        throw new Error("Only admins can create vendor accounts.");
+      }
 
-  const companyName = String(formData.get("companyName") ?? "").trim();
-  const contactEmail = String(formData.get("contactEmail") ?? "").trim().toLowerCase();
-  const categories = String(formData.get("categories") ?? "")
-    .split(",")
-    .map((value) => value.trim())
-    .filter(Boolean);
-  const onboardingDeadline = String(formData.get("onboardingDeadline") ?? "").trim();
+      const companyName = String(formData.get("companyName") ?? "").trim();
+      const contactEmail = String(formData.get("contactEmail") ?? "").trim().toLowerCase();
+      const categories = String(formData.get("categories") ?? "")
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean);
+      const onboardingDeadline = String(formData.get("onboardingDeadline") ?? "").trim();
 
-  if (!companyName || !contactEmail || !onboardingDeadline || categories.length === 0) {
-    throw new Error("Company, email, deadline, and at least one category are required.");
-  }
+      if (!companyName || !contactEmail || !onboardingDeadline || categories.length === 0) {
+        throw new Error("Company, email, deadline, and at least one category are required.");
+      }
 
-  const prisma = getPrismaClient();
-  const vendorCount = await prisma.vendor.count();
-  const reference = `VND-${String(1000 + vendorCount + 1).padStart(4, "0")}`;
+      const prisma = getPrismaClient();
+      const vendorCount = await prisma.vendor.count();
+      const reference = `VND-${String(1000 + vendorCount + 1).padStart(4, "0")}`;
 
-  await prisma.$transaction(async (tx) => {
-    const user = await tx.user.create({
-      data: {
-        name: companyName,
-        email: contactEmail,
-        role: "VENDOR",
-      },
-    });
+      await prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: {
+            name: companyName,
+            email: contactEmail,
+            role: "VENDOR",
+          },
+        });
 
-    await tx.vendor.create({
-      data: {
-        reference,
-        companyName,
-        contactEmail,
-        categories,
-        onboardingDeadline: new Date(`${onboardingDeadline}T00:00:00.000Z`),
-        status: "INVITED",
-        accountOwnerId: user.id,
-      },
-    });
-  });
+        await tx.vendor.create({
+          data: {
+            reference,
+            companyName,
+            contactEmail,
+            categories,
+            onboardingDeadline: new Date(`${onboardingDeadline}T00:00:00.000Z`),
+            status: "INVITED",
+            accountOwnerId: user.id,
+          },
+        });
+      });
 
-  revalidatePath("/dashboard/admin");
+      revalidatePath("/dashboard/admin");
+
+      return {
+        type: "success",
+        text: "Vendor account created successfully.",
+      };
+    } catch (error) {
+      return {
+        type: "error",
+        text:
+          error instanceof Error
+            ? error.message
+            : "We couldn't create that vendor account right now.",
+      };
+    }
+  })();
+
+  redirect(buildDashboardRedirectUrl(statusMessage));
 }
 
-export async function AdminOnboardingPanel() {
+export async function AdminOnboardingPanel({
+  statusMessage,
+}: {
+  statusMessage?: PanelStatusMessage | null;
+}) {
   const prisma = getPrismaClient();
   const [templates, vendors] = await Promise.all([
     prisma.onboardingDocumentTemplate.findMany({
@@ -138,6 +194,17 @@ export async function AdminOnboardingPanel() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+      {statusMessage ? (
+        <article
+          className={`lg:col-span-2 rounded-[1.5rem] border px-5 py-4 text-sm shadow-sm ${
+            statusMessage.type === "error"
+              ? "border-amber-200 bg-amber-50 text-amber-900"
+              : "border-emerald-200 bg-emerald-50 text-emerald-900"
+          }`}
+        >
+          {statusMessage.text}
+        </article>
+      ) : null}
       <div className="space-y-6">
         <article className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_30px_80px_-55px_rgba(15,23,42,0.45)]">
           <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--portal-blue)]">

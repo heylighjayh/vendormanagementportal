@@ -10,14 +10,22 @@ import { roles } from "@/lib/portal-types";
 
 type PageProps = {
   params: Promise<{ role: string }>;
+  searchParams: Promise<{
+    error?: string | string[];
+    success?: string | string[];
+  }>;
 };
+
+function getStatusParam(value?: string | string[]) {
+  return Array.isArray(value) ? value[0] : value;
+}
 
 export function generateStaticParams() {
   return roles.map((role) => ({ role }));
 }
 
-export default async function RoleDashboardPage({ params }: PageProps) {
-  const { role } = await params;
+export default async function RoleDashboardPage({ params, searchParams }: PageProps) {
+  const [{ role }, resolvedSearchParams] = await Promise.all([params, searchParams]);
 
   if (!isRole(role)) {
     notFound();
@@ -35,12 +43,23 @@ export default async function RoleDashboardPage({ params }: PageProps) {
 
   const snapshot = await getPortalSnapshot();
   const dashboard = getDashboardConfig(role, snapshot);
+  const errorMessage = getStatusParam(resolvedSearchParams.error);
+  const successMessage = getStatusParam(resolvedSearchParams.success);
+  const statusMessage = errorMessage
+    ? { type: "error" as const, text: errorMessage }
+    : successMessage
+      ? { type: "success" as const, text: successMessage }
+      : null;
 
   return (
     <DashboardView dashboard={dashboard} currentUser={session.user}>
-      {role === "admin" ? <AdminOnboardingPanel /> : null}
+      {role === "admin" ? <AdminOnboardingPanel statusMessage={statusMessage} /> : null}
       {role === "vendor" ? (
-        <VendorOnboardingPanel userId={session.user.id} email={session.user.email} />
+        <VendorOnboardingPanel
+          userId={session.user.id}
+          email={session.user.email}
+          statusMessage={statusMessage}
+        />
       ) : null}
     </DashboardView>
   );
