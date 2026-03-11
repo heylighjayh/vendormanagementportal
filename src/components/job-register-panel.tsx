@@ -632,7 +632,7 @@ export async function JobRegisterPanel({
       )?.state ?? "PENDING";
 
     return (
-      <div className="space-y-6">
+      <div className="grid h-full min-h-0 gap-4">
         {statusMessage ? (
           <article
             className={`rounded-[1.5rem] border px-5 py-4 text-sm shadow-sm ${
@@ -644,64 +644,64 @@ export async function JobRegisterPanel({
             {statusMessage.text}
           </article>
         ) : null}
-        <article className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_30px_80px_-55px_rgba(15,23,42,0.45)]">
-        <div className="grid gap-6 xl:grid-cols-[0.78fr_1.22fr]">
-          <div className="space-y-6">
+        <article className="flex min-h-0 flex-col rounded-[1.5rem] border border-slate-200 bg-white p-3.5 shadow-[0_30px_80px_-55px_rgba(15,23,42,0.45)]">
+        <div className="grid h-full min-h-0 gap-4 xl:grid-cols-[0.78fr_1.22fr]">
+          <div className="grid min-h-0 gap-4">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--portal-blue)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--portal-blue)]">
                 Jobs
               </p>
-              <h2 className="mt-3 text-2xl font-semibold text-slate-950">
+              <h2 className="mt-1.5 text-lg font-semibold text-slate-950">
                 {role === "admin" ? "Create and manage jobs" : "Open jobs"}
               </h2>
             </div>
 
             {role === "admin" ? (
               <>
-                <form action={createJobAction} className="grid gap-4">
+                <form action={createJobAction} className="grid gap-2.5 xl:grid-cols-2">
                   <input
                     required
                     name="title"
                     placeholder="Job title"
-                    className="rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-[var(--portal-blue)]"
+                    className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-[var(--portal-blue)]"
                   />
                   <input
                     required
                     name="category"
                     placeholder="Category"
-                    className="rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-[var(--portal-blue)]"
+                    className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-[var(--portal-blue)]"
                   />
                   <textarea
                     required
                     name="description"
-                    rows={4}
+                    rows={3}
                     placeholder="Job description"
-                    className="rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-[var(--portal-blue)]"
+                    className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-[var(--portal-blue)] xl:col-span-2"
                   />
                   <button
                     type="submit"
-                    className="rounded-full bg-[var(--portal-blue)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#184ca8]"
+                    className="rounded-full bg-[var(--portal-blue)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#184ca8] xl:justify-self-start"
                   >
                     Create job
                   </button>
                 </form>
 
-                <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5">
-                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--portal-red)]">
+                <div className="rounded-[1.25rem] border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--portal-red)]">
                     Assign vendor
                   </p>
                   {selectedJob ? (
-                    <form action={assignJobAction} className="mt-4 grid gap-4">
+                    <form action={assignJobAction} className="mt-2.5 grid gap-2.5">
                       <input type="hidden" name="jobId" value={selectedJob.id} />
                       <input type="hidden" name="jobReference" value={selectedJob.reference} />
-                      <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700">
                         {selectedJob.reference} · {selectedJob.title}
                       </div>
                       <select
                         required
                         name="vendorId"
                         defaultValue={selectedJob.assignment?.vendorId ?? ""}
-                        className="rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-[var(--portal-blue)]"
+                        className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-[var(--portal-blue)]"
                       >
                         <option value="" disabled>
                           Select verified vendor
@@ -714,13 +714,13 @@ export async function JobRegisterPanel({
                       </select>
                       <button
                         type="submit"
-                        className="rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                        className="rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
                       >
                         {selectedJob.assignment ? "Reassign job" : "Assign job"}
                       </button>
                     </form>
                   ) : (
-                    <p className="mt-3 text-sm leading-6 text-slate-600">
+                    <p className="mt-2 text-xs leading-5 text-slate-600">
                       Create a job or open one from the list to assign it.
                     </p>
                   )}
@@ -728,11 +728,16 @@ export async function JobRegisterPanel({
               </>
             ) : null}
 
-            <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--portal-red)]">
-                Job register
-              </p>
-              <div className="mt-4 space-y-3">
+            <div className="flex min-h-0 flex-col rounded-[1.25rem] border border-slate-200 bg-slate-50 p-3">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--portal-red)]">
+                  Job register
+                </p>
+                <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-700">
+                  {jobs.length} jobs
+                </span>
+              </div>
+              <div className="portal-scroll mt-2.5 space-y-2.5 pr-1">
                 {jobs.length === 0 ? (
                   <p className="text-sm text-slate-600">No jobs available.</p>
                 ) : (
@@ -740,19 +745,21 @@ export async function JobRegisterPanel({
                     <Link
                       key={job.id}
                       href={buildJobViewUrl(role, job.reference)}
-                      className={`block rounded-[1.25rem] border px-4 py-4 transition ${
+                      className={`block rounded-[1rem] border px-3 py-3 transition ${
                         selectedJob?.id === job.id
                           ? "border-slate-900 bg-slate-900 text-white"
                           : "border-slate-200 bg-white text-slate-900 hover:border-slate-300"
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold">{job.reference}</p>
-                          <h3 className="mt-1 text-base font-semibold">{job.title}</h3>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold uppercase tracking-[0.16em]">
+                            {job.reference}
+                          </p>
+                          <h3 className="mt-1 truncate text-sm font-semibold">{job.title}</h3>
                         </div>
                         <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${
+                          className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] ${
                             selectedJob?.id === job.id
                               ? "bg-white/10 text-white"
                               : "bg-slate-100 text-slate-700"
@@ -762,7 +769,7 @@ export async function JobRegisterPanel({
                         </span>
                       </div>
                       <p
-                        className={`mt-2 text-sm ${
+                        className={`mt-1.5 text-xs leading-5 ${
                           selectedJob?.id === job.id ? "text-slate-200" : "text-slate-600"
                         }`}
                       >
@@ -776,67 +783,67 @@ export async function JobRegisterPanel({
             </div>
           </div>
 
-          <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5">
+          <div className="portal-scroll min-h-0 rounded-[1.25rem] border border-slate-200 bg-slate-50 p-3">
             {selectedJob ? (
               <>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--portal-blue)]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--portal-blue)]">
                       Job detail
                     </p>
-                    <h3 className="mt-2 text-2xl font-semibold text-slate-950">
+                    <h3 className="mt-1.5 text-xl font-semibold text-slate-950">
                       {selectedJob.title}
                     </h3>
-                    <p className="mt-1 text-sm text-slate-600">{selectedJob.reference}</p>
+                    <p className="mt-1 text-xs text-slate-600">{selectedJob.reference}</p>
                   </div>
-                  <span className="rounded-full bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">
+                  <span className="rounded-full bg-white px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-700">
                     {formatStatusLabel(selectedJob.status)}
                   </span>
                 </div>
 
-                <div className="mt-5 grid gap-4 md:grid-cols-2">
-                  <div className="rounded-[1.25rem] border border-slate-200 bg-white p-4">
-                    <p className="text-sm text-slate-500">Category</p>
-                    <p className="mt-2 text-sm font-semibold text-slate-950">
+                <div className="mt-3 grid gap-2.5 md:grid-cols-2 xl:grid-cols-4">
+                  <div className="rounded-[1rem] border border-slate-200 bg-white p-3">
+                    <p className="text-[11px] uppercase tracking-[0.16em] text-slate-500">Category</p>
+                    <p className="mt-1.5 text-sm font-semibold text-slate-950">
                       {selectedJob.category}
                     </p>
                   </div>
-                  <div className="rounded-[1.25rem] border border-slate-200 bg-white p-4">
-                    <p className="text-sm text-slate-500">Assigned vendor</p>
-                    <p className="mt-2 text-sm font-semibold text-slate-950">
+                  <div className="rounded-[1rem] border border-slate-200 bg-white p-3">
+                    <p className="text-[11px] uppercase tracking-[0.16em] text-slate-500">Assigned vendor</p>
+                    <p className="mt-1.5 text-sm font-semibold text-slate-950">
                       {selectedJob.assignment?.vendor.companyName ?? "Not assigned"}
                     </p>
                   </div>
-                  <div className="rounded-[1.25rem] border border-slate-200 bg-white p-4">
-                    <p className="text-sm text-slate-500">Assignment approval</p>
-                    <p className="mt-2 text-sm leading-6 text-slate-700">
+                  <div className="rounded-[1rem] border border-slate-200 bg-white p-3">
+                    <p className="text-[11px] uppercase tracking-[0.16em] text-slate-500">Assignment approval</p>
+                    <p className="mt-1.5 text-xs leading-5 text-slate-700">
                       Admin: {formatStatusLabel(assignmentAdminState)}. Approver:{" "}
                       {formatStatusLabel(assignmentApproverState)}.
                     </p>
                   </div>
-                  <div className="rounded-[1.25rem] border border-slate-200 bg-white p-4">
-                    <p className="text-sm text-slate-500">Files</p>
-                    <p className="mt-2 text-sm leading-6 text-slate-700">
-                      Completion: {selectedJob.completionSubmission ? "Attached" : "Not attached"}.
-                      Invoice: {selectedJob.invoiceSubmission ? "Attached" : "Not attached"}.
+                  <div className="rounded-[1rem] border border-slate-200 bg-white p-3">
+                    <p className="text-[11px] uppercase tracking-[0.16em] text-slate-500">Files</p>
+                    <p className="mt-1.5 text-xs leading-5 text-slate-700">
+                      Completion: {selectedJob.completionSubmission ? "Attached" : "Pending"}.
+                      Invoice: {selectedJob.invoiceSubmission ? "Attached" : "Pending"}.
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-5 rounded-[1.25rem] border border-slate-200 bg-white p-4">
-                  <p className="text-sm text-slate-500">Description</p>
-                  <p className="mt-2 text-sm leading-6 text-slate-700">
+                <div className="mt-3 rounded-[1rem] border border-slate-200 bg-white p-3">
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-slate-500">Description</p>
+                  <p className="mt-1.5 text-sm leading-6 text-slate-700">
                     {selectedJob.description}
                   </p>
                 </div>
 
-                <div className="mt-5 flex flex-wrap gap-3">
+                <div className="mt-3 flex flex-wrap gap-2">
                   {completionDownloadUrl ? (
                     <a
                       href={completionDownloadUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:border-slate-400"
+                      className="rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-900 transition hover:border-slate-400"
                     >
                       Open completion file
                     </a>
@@ -846,7 +853,7 @@ export async function JobRegisterPanel({
                       href={invoiceDownloadUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:border-slate-400"
+                      className="rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-900 transition hover:border-slate-400"
                     >
                       Open invoice
                     </a>
@@ -854,15 +861,15 @@ export async function JobRegisterPanel({
                 </div>
 
                 {(role === "admin" || role === "approver") && selectedJob.assignment ? (
-                  <div className="mt-5 rounded-[1.25rem] border border-slate-200 bg-white p-4">
-                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--portal-red)]">
+                  <div className="mt-3 rounded-[1rem] border border-slate-200 bg-white p-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--portal-red)]">
                       Assignment review
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                    <p className="mt-1.5 text-xs leading-5 text-slate-600">
                       Admin: {formatStatusLabel(assignmentAdminState)}. Approver:{" "}
                       {formatStatusLabel(assignmentApproverState)}.
                     </p>
-                    <div className="mt-4 flex flex-wrap gap-3">
+                    <div className="mt-2.5 flex flex-wrap gap-2">
                       <form action={reviewAssignmentAction}>
                         <input type="hidden" name="role" value={role} />
                         <input type="hidden" name="jobReference" value={selectedJob.reference} />
@@ -874,7 +881,7 @@ export async function JobRegisterPanel({
                         <input type="hidden" name="decision" value="APPROVED" />
                         <button
                           type="submit"
-                          className="rounded-full bg-[var(--portal-blue)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#184ca8]"
+                          className="rounded-full bg-[var(--portal-blue)] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#184ca8]"
                         >
                           Approve assignment
                         </button>
@@ -890,7 +897,7 @@ export async function JobRegisterPanel({
                         <input type="hidden" name="decision" value="CHANGES_REQUESTED" />
                         <button
                           type="submit"
-                          className="rounded-full border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-800 transition hover:bg-amber-50"
+                          className="rounded-full border border-amber-300 px-3 py-1.5 text-xs font-semibold text-amber-800 transition hover:bg-amber-50"
                         >
                           Request changes
                         </button>
@@ -900,15 +907,15 @@ export async function JobRegisterPanel({
                 ) : null}
 
                 {(role === "admin" || role === "approver") && selectedJob.completionSubmission ? (
-                  <div className="mt-5 rounded-[1.25rem] border border-slate-200 bg-white p-4">
-                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--portal-red)]">
+                  <div className="mt-3 rounded-[1rem] border border-slate-200 bg-white p-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--portal-red)]">
                       Completion review
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                    <p className="mt-1.5 text-xs leading-5 text-slate-600">
                       Admin: {formatStatusLabel(completionAdminState)}. Approver:{" "}
                       {formatStatusLabel(completionApproverState)}.
                     </p>
-                    <div className="mt-4 flex flex-wrap gap-3">
+                    <div className="mt-2.5 flex flex-wrap gap-2">
                       <form action={reviewCompletionAction}>
                         <input type="hidden" name="role" value={role} />
                         <input type="hidden" name="jobReference" value={selectedJob.reference} />
@@ -920,7 +927,7 @@ export async function JobRegisterPanel({
                         <input type="hidden" name="decision" value="APPROVED" />
                         <button
                           type="submit"
-                          className="rounded-full bg-[var(--portal-blue)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#184ca8]"
+                          className="rounded-full bg-[var(--portal-blue)] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#184ca8]"
                         >
                           Approve completion
                         </button>
@@ -936,7 +943,7 @@ export async function JobRegisterPanel({
                         <input type="hidden" name="decision" value="CHANGES_REQUESTED" />
                         <button
                           type="submit"
-                          className="rounded-full border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-800 transition hover:bg-amber-50"
+                          className="rounded-full border border-amber-300 px-3 py-1.5 text-xs font-semibold text-amber-800 transition hover:bg-amber-50"
                         >
                           Request changes
                         </button>
@@ -945,23 +952,23 @@ export async function JobRegisterPanel({
                   </div>
                 ) : null}
 
-                <div className="mt-6">
-                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--portal-red)]">
+                <div className="mt-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--portal-red)]">
                     Timeline
                   </p>
-                  <div className="mt-4 space-y-3">
+                  <div className="mt-2.5 space-y-2.5">
                     {jobTimeline.map((event) => (
                       <div
                         key={`${event.label}-${event.occurredAt?.toISOString() ?? "none"}`}
-                        className="rounded-[1.25rem] border border-slate-200 bg-white p-4"
+                        className="rounded-[1rem] border border-slate-200 bg-white p-3"
                       >
                         <div className="flex flex-wrap items-center justify-between gap-3">
-                          <p className="text-sm font-semibold text-slate-950">{event.label}</p>
-                          <span className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
+                          <p className="text-xs font-semibold text-slate-950">{event.label}</p>
+                          <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-slate-500">
                             {formatDateTime(event.occurredAt)}
                           </span>
                         </div>
-                        <p className="mt-2 text-sm leading-6 text-slate-600">{event.detail}</p>
+                        <p className="mt-1 text-xs leading-5 text-slate-600">{event.detail}</p>
                       </div>
                     ))}
                   </div>

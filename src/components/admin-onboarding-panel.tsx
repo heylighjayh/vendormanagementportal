@@ -276,7 +276,7 @@ export async function AdminOnboardingPanel({
       error instanceof Error ? error.message : "Admin records are unavailable right now.";
 
     return (
-      <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+      <div className="grid h-full min-h-0 gap-4 lg:grid-cols-[0.95fr_1.05fr]">
         {statusMessage ? (
           <article
             className={`lg:col-span-2 rounded-[1.5rem] border px-5 py-4 text-sm shadow-sm ${
@@ -305,7 +305,7 @@ export async function AdminOnboardingPanel({
   );
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+    <div className="grid h-full min-h-0 gap-4 lg:grid-cols-[0.9fr_1.1fr]">
       {statusMessage ? (
         <article
           className={`lg:col-span-2 rounded-[1.5rem] border px-5 py-4 text-sm shadow-sm ${
@@ -317,74 +317,74 @@ export async function AdminOnboardingPanel({
           {statusMessage.text}
         </article>
       ) : null}
-      <div className="space-y-6">
-        <article className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_30px_80px_-55px_rgba(15,23,42,0.45)]">
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--portal-blue)]">
+      <div className="grid min-h-0 gap-4 lg:grid-rows-[auto,minmax(0,1fr)]">
+        <article className="rounded-[1.35rem] border border-slate-200 bg-white p-3.5 shadow-[0_24px_60px_-55px_rgba(15,23,42,0.45)]">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--portal-blue)]">
             Invite vendor
           </p>
-          <h2 className="mt-3 text-2xl font-semibold text-slate-950">Create vendor account</h2>
-          <form action={inviteVendorAction} className="mt-6 grid gap-4">
+          <h2 className="mt-1.5 text-base font-semibold text-slate-950">Create vendor account</h2>
+          <form action={inviteVendorAction} className="mt-3 grid gap-2.5 xl:grid-cols-2">
             <input
               required
               name="companyName"
               placeholder="Vendor company name"
-              className="rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-[var(--portal-blue)]"
+              className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-[var(--portal-blue)]"
             />
             <input
               required
               type="email"
               name="contactEmail"
               placeholder="vendor@example.com"
-              className="rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-[var(--portal-blue)]"
+              className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-[var(--portal-blue)]"
             />
             <input
               required
               name="categories"
               placeholder="Networking Jobs, CCTV Jobs"
-              className="rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-[var(--portal-blue)]"
+              className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-[var(--portal-blue)] xl:col-span-2"
             />
             <input
               required
               type="date"
               name="onboardingDeadline"
-              className="rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-[var(--portal-blue)]"
+              className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-[var(--portal-blue)]"
             />
             <button
               type="submit"
-              className="rounded-full bg-[var(--portal-blue)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#184ca8]"
+              className="rounded-full bg-[var(--portal-blue)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#184ca8] xl:justify-self-start"
             >
               Create vendor account
             </button>
           </form>
         </article>
 
-        <article className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_30px_80px_-55px_rgba(15,23,42,0.45)]">
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--portal-red)]">
+        <article className="flex min-h-0 flex-col rounded-[1.35rem] border border-slate-200 bg-white p-3.5 shadow-[0_24px_60px_-55px_rgba(15,23,42,0.45)]">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--portal-red)]">
             Vendor intake queue
           </p>
-          <div className="mt-5 space-y-4">
+          <div className="portal-scroll mt-2.5 space-y-2.5 pr-1">
             {vendors.map((vendor) => (
               <div
                 key={vendor.id}
-                className="rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4"
+                className="rounded-[1rem] border border-slate-200 bg-slate-50 p-2.5"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <h3 className="text-base font-semibold text-slate-950">
+                    <h3 className="text-sm font-semibold text-slate-950">
                       {vendor.companyName}
                     </h3>
-                    <p className="mt-1 text-sm text-slate-600">{vendor.contactEmail}</p>
+                    <p className="mt-1 text-xs text-slate-600">{vendor.contactEmail}</p>
                   </div>
-                  <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">
+                  <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-700">
                     {vendor.status.replaceAll("_", " ")}
                   </span>
                 </div>
-                <p className="mt-3 text-sm leading-6 text-slate-600">
+                <p className="mt-2 text-xs leading-5 text-slate-600">
                   Reference {vendor.reference}. Deadline {vendor.onboardingDeadline
                     .toISOString()
                     .slice(0, 10)}. Categories: {vendor.categories.join(", ")}.
                 </p>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
+                <p className="mt-1.5 text-xs leading-5 text-slate-600">
                   Assigned login: {vendor.accountOwner?.email ?? "Not linked"}.
                   Uploaded files: {vendor._count.documents}.
                 </p>
@@ -394,91 +394,91 @@ export async function AdminOnboardingPanel({
         </article>
       </div>
 
-      <article className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-[0_30px_80px_-55px_rgba(15,23,42,0.45)]">
-        <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--portal-blue)]">
+      <article className="flex min-h-0 flex-col rounded-[1.35rem] border border-slate-200 bg-white p-3.5 shadow-[0_24px_60px_-55px_rgba(15,23,42,0.45)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--portal-blue)]">
           Templates
         </p>
-        <h2 className="mt-3 text-2xl font-semibold text-slate-950">Upload required files</h2>
-        <p className="mt-3 text-sm leading-6 text-slate-600">
+        <h2 className="mt-1.5 text-base font-semibold text-slate-950">Upload required files</h2>
+        <p className="mt-1.5 text-xs leading-5 text-slate-600">
           Files are stored using <span className="font-semibold">{storageBackendLabel}</span>.
         </p>
-        <form action={createTemplateAction} className="mt-6 grid gap-4">
+        <form action={createTemplateAction} className="mt-3 grid gap-2.5 xl:grid-cols-2">
           <input
             required
             name="name"
             placeholder="Vendor Registration Form"
-            className="rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-[var(--portal-blue)]"
+            className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-[var(--portal-blue)]"
           />
           <textarea
             name="description"
-            rows={3}
+            rows={2}
             placeholder="Short note for vendors"
-            className="rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-[var(--portal-blue)]"
+            className="rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-[var(--portal-blue)] xl:col-span-2"
           />
-          <label className="grid gap-2 rounded-2xl border border-dashed border-slate-300 px-4 py-4 text-sm text-slate-700">
-            <span className="font-medium text-slate-900">Template file</span>
+          <label className="grid gap-2 rounded-xl border border-dashed border-slate-300 px-3 py-2.5 text-sm text-slate-700 xl:col-span-2">
+            <span className="text-sm font-medium text-slate-900">Template file</span>
             <input
               required
               type="file"
               name="templateFile"
               className="block w-full text-sm file:mr-4 file:rounded-full file:border-0 file:bg-slate-950 file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-slate-800"
             />
-            <span className="text-xs text-slate-500">
-              Max file size: 20 MB.
-            </span>
+            <span className="text-[11px] text-slate-500">Max file size: 20 MB.</span>
           </label>
-          <label className="flex items-center gap-3 rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-700">
+          <label className="flex items-center gap-3 rounded-xl border border-slate-300 px-3 py-2.5 text-sm text-slate-700">
             <input type="checkbox" name="isRequired" defaultChecked />
             Mark as required for vendor verification
           </label>
           <button
             type="submit"
-            className="rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+            className="rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 xl:justify-self-start"
           >
             Add template to onboarding pack
           </button>
         </form>
 
-        <div className="mt-8 space-y-4">
+        <div className="portal-scroll mt-3 space-y-2.5 pr-1">
           {templates.map((template) => (
             <div
               key={template.id}
-              className="rounded-[1.25rem] border border-slate-200 bg-slate-50 p-4"
+              className="rounded-[1rem] border border-slate-200 bg-slate-50 p-2.5"
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h3 className="text-base font-semibold text-slate-950">{template.name}</h3>
-                  <p className="mt-1 text-sm text-slate-600">
+                  <h3 className="text-sm font-semibold text-slate-950">{template.name}</h3>
+                  <p className="mt-1 text-xs text-slate-600">
                     {template.description ?? "No instructions added yet."}
                   </p>
                 </div>
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">
+                <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-700">
                   {template.isRequired ? "Required" : "Optional"}
                 </span>
               </div>
-              <p className="mt-3 break-all text-sm leading-6 text-slate-600">
+              <p className="mt-2 break-all text-xs leading-5 text-slate-600">
                 Template path: {template.templateStoragePath}
               </p>
-              {downloadUrlByTemplateId.get(template.id) ? (
-                <a
-                  href={downloadUrlByTemplateId.get(template.id) ?? "#"}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-3 inline-flex rounded-full border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-900 transition hover:border-slate-400 hover:bg-white"
-                >
-                  Open file
-                </a>
-              ) : null}
-              <form action={deleteTemplateAction} className="mt-3">
-                <input type="hidden" name="templateId" value={template.id} />
-                <button
-                  type="submit"
-                  className="inline-flex rounded-full border border-rose-200 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-50"
-                >
-                  Delete template
-                </button>
-              </form>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
+              <div className="mt-2 flex flex-wrap gap-2">
+                {downloadUrlByTemplateId.get(template.id) ? (
+                  <a
+                    href={downloadUrlByTemplateId.get(template.id) ?? "#"}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-900 transition hover:border-slate-400 hover:bg-white"
+                  >
+                    Open file
+                  </a>
+                ) : null}
+                <form action={deleteTemplateAction}>
+                  <input type="hidden" name="templateId" value={template.id} />
+                  <button
+                    type="submit"
+                    className="inline-flex rounded-full border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
+                  >
+                    Delete
+                  </button>
+                </form>
+              </div>
+              <p className="mt-2 text-xs leading-5 text-slate-600">
                 Uploaded by {template.uploadedBy?.email ?? "system"}.
                 Submissions: {template._count.submissions}.
               </p>
